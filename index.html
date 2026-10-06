@@ -10,7 +10,7 @@
 <title>JaufmannEmpire</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%91%91%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="icon-192.png">
 <style>
 :root{--bg:#0b0d12;--card:#151924;--card2:#1c2130;--line:#2a3042;--tx:#e9ecf3;--mut:#9aa3b8;--gold:#f5b301;--cy:#3fd0ff;--red:#ff5d6c;--ok:#3ddc97}
 *{box-sizing:border-box}
@@ -69,7 +69,7 @@ a{color:var(--cy)}
 </head>
 <body>
 <header>
-  <div class="brand">👑 <b>Jaufmann</b>Empire</div>
+  <div class="brand" style="display:flex;align-items:center;gap:8px"><img src="icon-192.png" alt="" width="30" height="30" style="border-radius:8px"><span><b>Jaufmann</b>Empire</span></div>
   <button id="jv" class="jv" type="button">🎙️ Jarvis</button>
 </header>
 <nav class="tabs">
@@ -561,23 +561,23 @@ $("#bVTest").onclick=()=>{const on=S.voice.on;S.voice.on=true;say("Ja, Boss. All
 
 /* ---------- Jarvis: Spracherkennung ---------- */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let rec=null,jvOn=false,awaitCmd=false,awaitT=null;
+let rec=null,jvOn=false,awaitCmd=false,awaitT=null,netErr=0;
 const WAKE=/(jarvis|javis|jervis|jarwis|jarvi|jarvies|tscharvis|dscharvis|charvis|scharvis|schavis|davis|travis|charlies|charles|dschawis|tschawis)/i;
 function startRec(){if(!jvOn||speaking||!rec)return;try{rec.start()}catch(_){}}
 function jvToggle(){
   if(jvOn){jvOn=false;try{rec&&rec.abort()}catch(_){}jvUI();say("Jarvis offline.");return}
   if(!SR){msg("Sprachsteuerung geht nur in Google Chrome (Android oder PC).",1);return}
   if(!window.isSecureContext||location.protocol==="file:"||location.protocol==="content:"){msg("Jarvis geht nur, wenn die App über einen https-Link geöffnet ist (z.B. GitHub Pages), nicht als heruntergeladene Datei.",1);return}
-  rec=new SR();rec.lang="de-DE";rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
-  rec.onstart=()=>{if(!busy)msg("🎙️ Jarvis hört zu. Sag „Jarvis“.",2)};
+  rec=new SR();rec.lang="de-DE";rec.continuous=!/android/i.test(navigator.userAgent);netErr=0;rec.interimResults=true;rec.maxAlternatives=1;
+  rec.onstart=()=>{if(!busy&&netErr<4)msg("🎙️ Jarvis hört zu. Sag „Jarvis“.",2)};
   rec.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){const tx=e.results[i][0].transcript.trim();if(e.results[i].isFinal)heard(tx);else $("#heard").textContent="🎙️ höre: "+tx}};
   rec.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed"){jvOn=false;jvUI();msg("Mikrofon blockiert. Erlaube das Mikrofon für diese Seite (Schloss-Symbol in der Adresszeile).",1)}
-    else if(e.error==="audio-capture")msg("Kein Mikrofon gefunden.",1);else if(e.error==="network")msg("Spracherkennung braucht Internet.",1)};
-  rec.onend=()=>{if(jvOn&&!speaking)setTimeout(startRec,250)};
+    else if(e.error==="audio-capture")msg("Kein Mikrofon gefunden.",1);else if(e.error==="network"){netErr++;if(netErr>=4)msg("Spracherkennung erreicht Google nicht. Prüfe: Internet an, App „Google“ aktuell, Android-Einstellungen → Spracheingabe von Google an.",1)}};
+  rec.onend=()=>{if(jvOn&&!speaking)setTimeout(startRec,netErr?Math.min(800*netErr,4000):250)};
   jvOn=true;jvUI();go("ideas");if(S.voice.on&&window.speechSynthesis)say("Jarvis online. Ich höre, Boss.");else startRec()}
 function jvUI(){$("#jv").classList.toggle("on",jvOn);$("#jv").textContent=jvOn?"🎙️ Jarvis hört":"🎙️ Jarvis"}
 $("#jv").onclick=jvToggle;
-function heard(t){const low=t.toLowerCase(),m=low.match(WAKE);$("#heard").textContent="🎙️ gehört: „"+t+"“";
+function heard(t){netErr=0;const low=t.toLowerCase(),m=low.match(WAKE);$("#heard").textContent="🎙️ gehört: „"+t+"“";
   if(m){const rest=low.slice(m.index+m[0].length).replace(/^[\s,.!?:]+/,"");
     if(rest.length<3){awaitCmd=true;clearTimeout(awaitT);awaitT=setTimeout(()=>awaitCmd=false,12000);$("#heard").textContent="🎙️ Jarvis wartet auf deinen Befehl …";say("Ja, Boss?");return}
     return command(rest,t)}
