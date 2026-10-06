@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="JaufmannEmpire">
+<title>JaufmannEmpire</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%91%91%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#0b0d12;--card:#151924;--card2:#1c2130;--line:#2a3042;--tx:#e9ecf3;--mut:#9aa3b8;--gold:#f5b301;--cy:#3fd0ff;--red:#ff5d6c;--ok:#3ddc97}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+body{padding-bottom:84px}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;background:rgba(11,13,18,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.brand{font-size:19px;letter-spacing:.3px}.brand b{color:var(--gold)}
+.jv{border:1px solid var(--line);background:var(--card);color:var(--tx);border-radius:999px;padding:8px 14px;font-weight:600}
+.jv.on{border-color:var(--cy);color:var(--cy);box-shadow:0 0 0 3px rgba(63,208,255,.15),0 0 18px rgba(63,208,255,.35);animation:pulse 2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(63,208,255,.08),0 0 26px rgba(63,208,255,.5)}}
+.tabs{display:flex;gap:6px;padding:10px 16px 0;position:sticky;top:57px;z-index:4;background:var(--bg)}
+.tabs button{flex:1;white-space:nowrap;font-size:14px;padding:10px 6px;border:1px solid var(--line);border-bottom:none;background:var(--card);color:var(--mut);border-radius:12px 12px 0 0;font-weight:600}
+.tabs button.on{color:var(--gold);background:var(--card2)}
+main{padding:0 16px;max-width:760px;margin:0 auto}
+section{border-top:1px solid var(--line);padding-top:14px}
+h2{font-size:17px;margin:14px 0 8px}h3{font-size:15px;margin:16px 0 8px;color:var(--gold)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0}
+.mut{color:var(--mut);font-size:13px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,textarea,select{width:100%;background:var(--card2);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
+textarea{min-height:70px;resize:vertical}
+input[type=range]{padding:0}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
+.btn{border:none;border-radius:10px;padding:11px 14px;font-weight:700;background:var(--gold);color:#1a1300;min-height:44px}
+.btn.sec{background:var(--card2);color:var(--tx);border:1px solid var(--line);font-weight:600}
+.btn.sm{padding:7px 10px;min-height:36px;font-size:13px}
+.btn.cy{background:var(--cy);color:#00202b}
+.btn.red{background:transparent;color:var(--red);border:1px solid var(--red)}
+.btn:disabled{opacity:.45}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--card2);color:var(--mut);border-radius:999px;padding:6px 12px;font-size:13px}
+.chip.on{border-color:var(--gold);color:var(--gold)}
+pre.p{white-space:pre-wrap;word-break:break-word;background:#0f121a;border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d8deea;max-height:420px;overflow:auto}
+.tools{display:flex;flex-wrap:wrap;gap:6px}
+.tt{font-weight:700}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;background:var(--card2);color:var(--mut);border:1px solid var(--line);margin-left:6px}
+.lines{margin:8px 0}.ln{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px dashed var(--line)}.ln:last-child{border:none}
+.who{flex:none;font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;background:rgba(245,179,1,.15);color:var(--gold);min-width:64px;text-align:center}
+.who.sing{background:rgba(63,208,255,.15);color:var(--cy)}
+.thumbs{display:flex;gap:8px;overflow-x:auto;padding:4px 0}
+.thumbs .th{position:relative;flex:none}
+.thumbs img{width:72px;height:128px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.thumbs .x{position:absolute;top:2px;right:2px;background:#000a;color:#fff;border:none;border-radius:50%;width:24px;height:24px}
+.vimg{width:64px;height:114px;object-fit:cover;border-radius:8px;border:1px solid var(--line);flex:none}
+.edit{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px}
+.idea{display:flex;gap:10px;align-items:flex-start}
+.idea input{width:22px;height:22px;flex:none;margin-top:2px}
+.num{flex:none;width:28px;height:28px;border-radius:50%;background:var(--card2);display:grid;place-items:center;font-weight:800;color:var(--gold);font-size:13px}
+#bar{position:fixed;left:0;right:0;bottom:0;z-index:9;display:flex;gap:10px;align-items:center;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(11,13,18,.96);border-top:1px solid var(--line)}
+#msg{flex:1;font-size:13px;color:var(--mut)}#msg.err{color:var(--red)}#msg.ok{color:var(--ok)}
+#heard{font-size:12px;color:var(--cy)}
+.hide{display:none!important}
+a{color:var(--cy)}
+.notes{border-left:3px solid var(--cy);padding:6px 10px;background:rgba(63,208,255,.07);border-radius:6px;font-size:13px;margin:8px 0}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">👑 <b>Jaufmann</b>Empire</div>
+  <button id="jv" class="jv" type="button">🎙️ Jarvis</button>
+</header>
+<nav class="tabs">
+  <button data-tab="ideas" class="on" type="button">💡 Ideen</button>
+  <button data-tab="tasks" type="button">🎬 Aufgaben</button>
+  <button data-tab="set" type="button">⚙️ Optionen</button>
+</nav>
+<main>
+  <!-- IDEEN -->
+  <section id="tab-ideas">
+    <div id="heard"></div>
+    <label>Wer spielt mit?</label>
+    <div class="chips" id="cast"></div>
+    <label>Stil</label>
+    <select id="styleSel"></select>
+    <label>Wunsch, Thema oder Fan-Kommentar (darf leer sein)</label>
+    <textarea id="req" placeholder="z.B. Mutproben im Supermarkt … oder einfach einen Fan-Kommentar hier einfügen"></textarea>
+    <div class="row" style="margin-top:10px">
+      <select id="nIdeas" style="flex:0 0 96px"><option>3</option><option selected>5</option><option>10</option></select>
+      <button class="btn" id="bIdeas" type="button">💡 Ideen erstellen</button>
+    </div>
+    <div id="ideas"></div>
+    <details class="card">
+      <summary class="tt">➕ Eigene Aufgabe eintragen (ohne KI)</summary>
+      <label>Titel</label><input id="oTitle">
+      <div class="row"><div><label>Wer stellt die Wette</label><input id="oGiver"></div><div><label>Wer muss es machen</label><input id="oDoer"></div></div>
+      <label>Handlung</label><textarea id="oSum"></textarea>
+      <button class="btn sec" id="bOwn" type="button" style="margin-top:8px">Als Aufgabe speichern</button>
+    </details>
+  </section>
+
+  <!-- AUFGABEN-LISTE -->
+  <section id="tab-tasks" class="hide">
+    <div id="taskList"></div>
+  </section>
+
+  <!-- AUFGABE DETAIL -->
+  <section id="tab-detail" class="hide"></section>
+
+  <!-- EINSTELLUNGEN -->
+  <section id="tab-set" class="hide">
+    <div class="card">
+      <div class="tt">🔑 Claude API-Schlüssel</div>
+      <p class="mut">Bleibt nur auf diesem Gerät gespeichert und wird nur an Claude geschickt. Niemals im Chat oder an andere weitergeben.</p>
+      <div class="row"><input id="key" type="password" autocomplete="off" placeholder="sk-ant-api03-…"><button class="btn sec sm" id="bShowKey" type="button" style="flex:0 0 auto">👁️</button></div>
+      <div class="row" style="margin-top:8px"><button class="btn sm" id="bSaveKey" type="button">Speichern</button><button class="btn sec sm" id="bTestKey" type="button">Verbindung testen</button></div>
+      <label>KI-Modell</label><select id="model"></select>
+      <p class="mut" id="spent"></p>
+    </div>
+    <div class="card">
+      <div class="tt">🎬 Video &amp; Sprache</div>
+      <div class="row">
+        <div><label>Video-KI</label><select id="ai"><option>Grok</option><option>Veo</option><option>Kling</option><option>Andere</option></select></div>
+        <div><label>Dialogsprache</label><select id="lang"><option>Deutsch</option><option>Englisch</option><option>Türkisch</option><option>Spanisch</option></select></div>
+      </div>
+      <label>Bilder pro Aufgabe</label><select id="nImg"><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select>
+      <label>Deine festen Zusatzregeln (gelten für alles)</label>
+      <textarea id="rules" placeholder="z.B. Keine Musik in Videos. Immer eine Nahaufnahme."></textarea>
+    </div>
+    <div class="card">
+      <div class="tt">🎨 Stile</div>
+      <label>Stil bearbeiten</label><select id="stEdit"></select>
+      <label>Name</label><input id="stName">
+      <label>Anfang jedes Bild-Prompts</label><textarea id="stImg"></textarea>
+      <label>Ende jedes Bild-Prompts</label><textarea id="stEnd"></textarea>
+      <label>Anfang jedes Video-Prompts</label><textarea id="stVid"></textarea>
+      <label>Look-Satz am Video-Ende ("Keep … exactly as in the image, ___")</label><input id="stKeep">
+      <div class="row" style="margin-top:8px"><button class="btn sm" id="bStSave" type="button">Stil speichern</button><button class="btn sec sm" id="bStNew" type="button">Neuer Stil</button><button class="btn red sm" id="bStDel" type="button">Löschen</button></div>
+    </div>
+    <div class="card">
+      <div class="tt">🧍 Figuren</div>
+      <div id="charList"></div>
+      <button class="btn sec sm" id="bCharNew" type="button" style="margin-top:8px">➕ Neue Figur</button>
+    </div>
+    <div class="card">
+      <div class="tt">🎙️ Jarvis</div>
+      <label class="row" style="color:var(--tx)"><input type="checkbox" id="vOn" style="width:22px;height:22px;flex:none"> Jarvis antwortet mit Stimme</label>
+      <label>Stimme</label><select id="vName"></select>
+      <div class="row"><div><label>Tiefe <span id="vPv"></span></label><input type="range" id="vPitch" min="0.5" max="1.5" step="0.05"></div><div><label>Tempo <span id="vRv"></span></label><input type="range" id="vRate" min="0.6" max="1.4" step="0.05"></div></div>
+      <button class="btn sec sm" id="bVTest" type="button" style="margin-top:8px">▶️ Stimme testen</button>
+      <p class="mut">Die Stimmen kommen von deinem Handy. Für eine tiefe Männerstimme: Android-Einstellungen → Text-in-Sprache → Sprachausgabe von Google → Stimmdaten installieren → Deutsch → männliche Stimme wählen. Danach hier auswählen.</p>
+      <p class="mut">Befehle: „Jarvis" → „Ja, Boss?" · „mach 10 Aufgaben im Supermarkt" · „ich nehme 1 und 6" · „Bild-Prompts für Aufgabe 2" · „Video-Prompts" · „Beschreibung" · „Stopp"</p>
+    </div>
+    <div class="card">
+      <div class="tt">💾 Sicherung</div>
+      <p class="mut">Speichert Aufgaben, Figuren und Stile als Datei (ohne API-Schlüssel). Damit kannst du alles auf ein anderes Gerät übertragen.</p>
+      <div class="row"><button class="btn sec sm" id="bExport" type="button">Sicherung herunterladen</button><button class="btn sec sm" id="bImport" type="button">Sicherung laden</button></div>
+      <input type="file" id="fImport" accept="application/json,.json" class="hide">
+    </div>
+  </section>
+</main>
+<div id="bar"><span id="msg">Bereit.</span><button class="btn red sm hide" id="stop" type="button">Stopp</button></div>
+<input type="file" id="fImgs" accept="image/*" multiple class="hide">
+
+<script>
+"use strict";
+/* ---------- Helfer ---------- */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const up=s=>String(s||"").toUpperCase();
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){msg("Speicher voll. Lösche alte Aufgaben oder hochgeladene Bilder.",1);return false}}};
+
+/* ---------- Daten ---------- */
+const MODELS=[["claude-sonnet-5-5","Sonnet 5.5 · schnell & gut (empfohlen)",2,10],["claude-opus-5-5","Opus 5.5 · beste Qualität, teurer",4,20],["claude-haiku-4-5-20251001","Haiku 4.5 · am günstigsten",1,5]];
+const DEFSTYLES={
+ pixar:{name:"Pixar-3D (Bulma & Chichi)",img:"Pixar-style 3D animation render, vertical 9:16",end:"Soft warm cinematic lighting, shallow depth of field, detailed expressive faces. No anime look, no readable text.",vid:"Pixar-style 3D animation, vertical 9:16, animate this image.",keep:"Pixar-style 3D, not 2D"},
+ film3d:{name:"3D-Film (Goku & Vegeta)",img:"3D CGI render like a modern animated movie, vertical 9:16",end:"Fully three-dimensional models with depth, soft shading, real fabric folds, volumetric lighting. Keep hairstyles, faces and outfits exactly as described, only rendered in 3D. NOT 2D, NOT drawn, NOT anime illustration, NOT cel-shaded, no black outlines, no readable text.",vid:"3D animated movie style, vertical 9:16, animate this image.",keep:"3D, not 2D"}
+};
+const DEFCHARS=[
+ {id:"bulma",name:"Bulma",look:"short blue hair, red neckerchief, white short-sleeved top, blue jeans, beige boots, brown shoulder bag",persona:"selbstbewusst, frech, eitel, Technik-Genie, schnell beleidigt, liebt Shopping",rules:"",style:"pixar",on:true},
+ {id:"chichi",name:"Chichi",look:"long black hair with straight bangs and a bun tied with a red band, sleeveless purple Chinese-style dress with yellow trim and yellow sash, white pants, purple boots, silver wrist guards",persona:"temperamentvoll, streng, ehrgeizig, Kämpferin, trockener Humor, gibt nie auf",rules:"Chichi never holds a frying pan.",style:"pixar",on:true},
+ {id:"goku",name:"Goku",look:"spiky black hair, orange gi with blue undershirt, dark blue sash, blue wristbands, blue boots",persona:"naiv, fröhlich, immer hungrig, denkt an Essen und Training",rules:"",style:"film3d",on:false},
+ {id:"vegeta",name:"Vegeta",look:"tall spiky upright black hair with widow's peak, blue bodysuit, white Saiyan battle armor with gold trim, white gloves, white boots with gold tips",persona:"stolz, arrogant, schnell genervt, nennt Goku 'Kakarott', 'der Prinz aller Saiyajins'",rules:"",style:"film3d",on:false}
+];
+const LANGEN={Deutsch:"German",Englisch:"English",Türkisch:"Turkish",Spanisch:"Spanish"};
+let S=Object.assign({key:"",model:MODELS[0][0],ai:"Grok",lang:"Deutsch",nImg:3,rules:"",style:"pixar",spent:0,
+  styles:JSON.parse(JSON.stringify(DEFSTYLES)),chars:JSON.parse(JSON.stringify(DEFCHARS)),
+  voice:{on:true,name:"",pitch:0.8,rate:0.95}},LS.get("je2_s",{}));
+let TASKS=LS.get("je2_t",[]);
+let IDEAS=LS.get("je2_i",[]);
+const FULL={}; // hochgeladene Bilder in voller Größe (nur im Speicher)
+let cur=null;  // offene Aufgabe (id)
+const saveS=()=>LS.set("je2_s",S),saveT=()=>LS.set("je2_t",TASKS),saveI=()=>LS.set("je2_i",IDEAS);
+const task=id=>TASKS.find(t=>t.id===id);
+const styleOf=t=>S.styles[(t&&t.style)||S.style]||Object.values(S.styles)[0];
+const castChars=t=>{const names=(t?t.cast:S.chars.filter(c=>c.on).map(c=>c.name))||[];return S.chars.filter(c=>names.includes(c.name))};
+
+/* ---------- Status ---------- */
+let busy=false,ctl=null,tT=null;
+function msg(t,kind){const m=$("#msg");m.textContent=t;m.className=kind===1?"err":kind===2?"ok":""}
+function tick(l){const t0=Date.now();clearInterval(tT);const f=()=>msg(`${l} … ${Math.round((Date.now()-t0)/1000)} Sek.`);f();tT=setInterval(f,1000)}
+function lock(on){$$(".btn").forEach(b=>{if(b.id==="stop")return;if(on){b.dataset.w=b.disabled?"1":"0";b.disabled=true}else if(b.dataset.w!==undefined){b.disabled=b.dataset.w==="1";delete b.dataset.w}});$("#stop").classList.toggle("hide",!on)}
+$("#stop").onclick=()=>ctl&&ctl.abort();
+async function run(label,fn,done){if(busy){msg("Ich arbeite noch, kurz warten.",1);return}
+  busy=true;ctl=new AbortController();lock(true);tick(label);let cost0=S.spent;
+  try{await fn();clearInterval(tT);const c=S.spent-cost0;msg(`Fertig${c>0?` · ca. ${c.toFixed(3).replace(".",",")} $`:""}.`,2);if(done)say(done)}
+  catch(e){clearInterval(tT);if(e.message!=="nokey"){msg(errText(e),1);say(e.name==="AbortError"?"Abgebrochen, Boss.":"Es gab ein Problem, Boss.")}}
+  finally{busy=false;lock(false)}}
+function errText(e){
+  if(e.name==="AbortError")return "Abgebrochen.";
+  const s=e.status,m=(e.message||"").toLowerCase();
+  if(s===401)return "API-Schlüssel ungültig. Prüfe ihn unter ⚙️ Einstellungen.";
+  if(s===403)return "Kein Zugriff mit diesem Schlüssel. Prüfe ihn in der Claude Console.";
+  if(m.includes("credit")||m.includes("balance"))return "Kein Guthaben mehr auf deinem Claude-Konto. Lade in der Console Guthaben auf.";
+  if(s===429)return "Zu viele Anfragen. Kurz warten und nochmal tippen.";
+  if(s===529||s===503||m.includes("overloaded"))return "Claude ist gerade überlastet. Nochmal tippen.";
+  if(s===400)return "Anfrage abgelehnt: "+(e.message||"")+"";
+  if(e instanceof TypeError)return "Keine Verbindung. Internet prüfen und nochmal tippen.";
+  if(e instanceof SyntaxError)return "Antwort unvollständig (zu lang?). Nochmal tippen oder weniger Bilder wählen.";
+  return "Fehler: "+(e.message||e);
+}
+
+/* ---------- Claude API ---------- */
+function SYS(t){
+  const st=styleOf(t),cs=castChars(t),L=S.lang;
+  return `Du bist der Chefautor und Prompt-Regisseur von "JaufmannEmpire" für die TikTok-Serie "Wetten, du traust dich nicht": Figuren stellen sich gegenseitig lustige Mutproben. Du schreibst Aufgaben-Ideen, Bild-Prompts und Video-Prompts in absoluter Top-Qualität.
+
+FIGUREN (Aussehen in JEDEM Bild-Prompt wörtlich in Klammern nach dem Namen verwenden; Charakter für die Dialoge nutzen):
+${cs.map(c=>`- ${c.name}: AUSSEHEN: ${c.look} | CHARAKTER: ${c.persona}${c.rules?` | FESTE REGEL: ${c.rules}`:""}`).join("\n")||"- (keine Figuren gewählt, erfinde passende)"}
+
+BILD-STIL: Jeder Bild-Prompt beginnt mit "${st.img}." und endet mit "${st.end}"
+VIDEO-KI: ${S.ai}. Prompt-Texte auf Englisch, Dialoge auf ${L}.
+FESTE ZUSATZREGELN DES NUTZERS (haben Vorrang): ${S.rules||"keine"}
+
+AUFGABEN-REGELN
+- Abwechselnd: mal stellt die eine Figur der anderen die Wette, mal umgekehrt.
+- Jede Aufgabe ist sehr witzig, passt zum Charakter der Figuren und hat eine klare Pointe bzw. ein überraschendes Ende.
+- Harmlos: keine Gewalt, keine Waffen, nichts Verletzendes oder Peinlich-Sexuelles.
+
+BILD-PROMPT-REGELN
+- Jedes Bild ist ein neuer Moment: Bild 1 zeigt die Wette (Ort, Requisite, beide Figuren), dann Steigerung, letztes Bild = Pointe.
+- Abwechslungsreiche Perspektiven, mindestens eine Nahaufnahme; dazu z.B. Froschperspektive, Vogelperspektive, Over-the-Shoulder, Weitwinkel, Dutch Angle. Die Perspektive steht im Titel.
+- Jede sichtbare Figur mit Name, komplettem Aussehen in Klammern, Position (left/right/center/foreground/background), Haltung und Mimik. Mimik übertrieben und lustig.
+- Nur Dinge ins Bild, die zur Geschichte gehören. Keine zufälligen Requisiten.
+- Eindeutig formulieren: Menschen, die etwas nachahmen, klar so beschreiben (z.B. "humans imitating penguins, no real penguins, no animals").
+- Niemals Formulierungen wie "original character design" oder "like in the anime" (führt zu 2D-Zeichenstil).
+- Filter-sicher: keine Tränen, kein Weinen, kein Blut, keine Küsse, keine knappe Kleidung. Stattdessen Schweißtropfen und Grimassen.
+- Zeilenumbrüche (\\n) nach jedem Satz oder spätestens alle 60 Zeichen, damit der Prompt untereinander steht.
+
+VIDEO-PROMPT-REGELN (die App baut aus deinen Feldern den fertigen Prompt)
+- KEINE Zeitangaben, keine Sekunden.
+- "scene": Ort und Kamerabewegung, 1-2 englische Sätze.
+- "characters": jede sichtbare Figur, die wichtig ist oder spricht: "name", "position" (z.B. "on the left, sitting at the table"), "look" (kurz: Haare, Kleidung, was sie in der Hand hält).
+- "action": genaue, flüssige Bewegungsbeschreibung auf Englisch, Schritt für Schritt, damit die Handlung perfekt aussieht und logisch aus dem Startbild folgt. Körperhaltungen konkret beschreiben (Beispiel Pinguin-Gang: legs stiff and close together, tiny steps, feet turned outward, body rocking left and right, arms stiff at the sides, hands flapping like flippers). Wenn mehrere Personen etwas tun sollen: "EVERY person … at the same time".
+- "lines": 1 bis 3 Dialogzeilen in fester Reihenfolge, pro Zeile genau EIN Sprecher. Nur Figuren, die im Bild sichtbar sind, sprechen. "speaker" (Name), "position" (wo im Bild), "mode" (says | whispers | shouts | mutters | sings), "how" (Tonfall auf Englisch), "text" (kurzer, sehr witziger Satz auf ${L}, im Charakter der Figur).
+- Dialogtext NORMAL geschrieben, niemals gezogene Buchstaben wie "Freeeund" oder "Briiiötchen". Lange Töne beim Singen stattdessen in "how" beschreiben (z.B. "long held note on the last word Teddybär"). Bei Wörtern, die englisch ausgesprochen werden könnten, Ausspracheregel in "how" ergänzen.
+- Kurze Sätze, damit nicht langsam oder gehetzt gesprochen wird. Lieber 2 starke Zeilen als 4 schwache. Die letzte Zeile ist die Pointe.
+- Gesang: mode "sings", Liedtext eigen erfunden (keine echten Lieder zitieren), klar und einfach, reimt sich.
+- "audio": Geräusche konkret benennen. Standard: keine Musik, kein Lachen, keine Hintergrundstimmen. Musik nur, wenn die Szene sie braucht (Karaoke, Tanz) oder der Nutzer es will.
+- Bei Grok: kompakt halten.
+- PRÜFSCHRITT vor der Ausgabe: richtige Sprecher, nur sichtbare Figuren sprechen, Aussehen und Positionen passen zum Bild, Handlung logisch. Still korrigieren.
+
+AUSGABE: nur gültiges JSON, ohne Text davor oder danach, exakt im verlangten Schema.`}
+
+const PRICE=m=>{const r=MODELS.find(x=>x[0]===m)||MODELS[0];return[r[2],r[3]]};
+async function api(prompt,{t=null,images=[],max=12000}={}){
+  if(!S.key){msg("Bitte zuerst deinen API-Schlüssel unter ⚙️ Einstellungen eintragen.",1);go("set");throw new Error("nokey")}
+  const content=[];
+  images.forEach((b64,i)=>{content.push({type:"text",text:`Bild ${i+1}:`});content.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}})});
+  content.push({type:"text",text:prompt});
+  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",signal:ctl&&ctl.signal,
+    headers:{"x-api-key":S.key.trim(),"anthropic-version":"2023-06-01","content-type":"application/json","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model:S.model,max_tokens:max,system:SYS(t),messages:[{role:"user",content}]})});
+  let j={};try{j=await r.json()}catch(_){}
+  if(!r.ok){const e=new Error((j.error&&j.error.message)||("HTTP "+r.status));e.status=r.status;throw e}
+  if(j.usage){const[pi,po]=PRICE(S.model);S.spent+=(j.usage.input_tokens*pi+j.usage.output_tokens*po)/1e6;saveS();renderSpent()}
+  const txt=(j.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+  const a=txt.indexOf("{"),b=txt.lastIndexOf("}");
+  if(a<0||b<a)throw new SyntaxError("no json");
+  return JSON.parse(txt.slice(a,b+1));
+}
+const taskCtx=t=>`AUFGABE: ${t.title}\nWer stellt die Wette: ${t.giver} → wer muss sie machen: ${t.doer}\nHandlung: ${t.summary}\nFiguren: ${t.cast.join(", ")}`;
+
+/* ---------- Video-Prompt zusammenbauen ---------- */
+function vtext(v,t){
+  if(v.override)return v.override;
+  const st=styleOf(t),lang=LANGEN[S.lang]||"German",L=[];
+  const ch=v.characters||[],ln=v.lines||[];
+  L.push(st.vid);
+  const singers=[...new Set(ln.filter(l=>l.mode==="sings").map(l=>up(l.speaker)))];
+  if(singers.length)L.push(`This is a music video, ${singers.join(" and ")} ${singers.length>1?"sing":"sings"} the whole time.`);
+  if(v.scene)L.push(v.scene);
+  if(ch.length===1){L.push("",`Only ${up(ch[0].name)} is in the frame: ${ch[0].look}${ch[0].position?", "+ch[0].position:""}.`)}
+  else if(ch.length){L.push("","Characters:");ch.forEach(c=>L.push(`- ${up(c.name)}: ${c.position?c.position+", ":""}${c.look}.`))}
+  if(v.action)L.push("","Action: "+v.action);
+  if(ln.length){
+    L.push("");
+    if(ln.length>1)L.push("Dialogue in this exact order, only the named person speaks:");
+    ln.forEach((l,i)=>{
+      const sp=up(l.speaker),others=ch.map(c=>up(c.name)).filter(n=>n!==sp);
+      const sing=l.mode==="sings";
+      L.push(`${ln.length>1?(i+1)+". ":""}ONLY ${sp}${l.position?` (${l.position})`:""} ${sing?"sings":(l.mode||"says")} in ${lang}${l.how?", "+l.how:""}${sing?", with a real singing voice, clear pitch, NOT speaking, NOT shouting":""}:`);
+      L.push(`"${l.text}"`);
+      if(others.length)L.push(others.length>1?`${others.join(" and ")} keep their mouths closed.`:`${others[0]} keeps their mouth closed.`);
+    });
+    L.push("",`All lines in ${lang} with native ${lang} pronunciation, no English accent, every word clear and easy to understand.`);
+  }else L.push("","No dialogue, nobody speaks.");
+  if(v.audio)L.push("","Audio: "+v.audio);
+  const rules=castChars(t).filter(c=>c.rules&&ch.some(x=>up(x.name)===up(c.name))).map(c=>c.rules);
+  L.push(`Keep all characters exactly as in the image, ${st.keep}.`+(rules.length?" "+rules.join(" "):""));
+  return L.filter((x,i,a)=>!(x===""&&(i===0||a[i-1]===""))).join("\n");
+}
+
+/* ---------- Tabs ---------- */
+function go(tab){$$(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab||(tab==="detail"&&b.dataset.tab==="tasks")));
+  ["ideas","tasks","detail","set"].forEach(x=>$("#tab-"+x).classList.toggle("hide",x!==tab));
+  if(tab==="tasks")renderTasks();if(tab==="detail")renderDetail();if(tab==="set")renderSet();window.scrollTo(0,0)}
+$$(".tabs button").forEach(b=>b.onclick=()=>go(b.dataset.tab));
+
+/* ---------- Ideen ---------- */
+function renderCast(){$("#cast").innerHTML=S.chars.map((c,i)=>`<button type="button" class="chip ${c.on?"on":""}" data-i="${i}">${esc(c.name)}</button>`).join("");
+  $$("#cast .chip").forEach(b=>b.onclick=()=>{const c=S.chars[+b.dataset.i];c.on=!c.on;
+    const act=S.chars.filter(x=>x.on),sts=[...new Set(act.map(x=>x.style).filter(Boolean))];
+    if(sts.length===1&&S.styles[sts[0]]){S.style=sts[0]}saveS();renderCast();renderStyleSel()})}
+function renderStyleSel(){$("#styleSel").innerHTML=Object.entries(S.styles).map(([k,v])=>`<option value="${k}" ${k===S.style?"selected":""}>${esc(v.name)}</option>`).join("")}
+$("#styleSel").onchange=e=>{S.style=e.target.value;saveS()};
+function renderIdeas(){
+  if(!IDEAS.length){$("#ideas").innerHTML="";return}
+  $("#ideas").innerHTML=`<h2>Vorschläge</h2>`+IDEAS.map((d,i)=>`<div class="card idea"><input type="checkbox" data-i="${i}"><div class="num">${i+1}</div><div style="flex:1"><div class="tt">${esc(d.title)}</div><div class="mut">${esc(d.giver)} → ${esc(d.doer)}</div><div>${esc(d.summary)}</div><button class="btn sec sm" data-take="${i}" type="button" style="margin-top:8px">➕ Übernehmen</button></div></div>`).join("")+
+  `<div class="row"><button class="btn" id="bTakeSel" type="button">➕ Ausgewählte übernehmen</button><button class="btn sec" id="bClearIdeas" type="button" style="flex:0 0 auto">Leeren</button></div>`;
+  $$("[data-take]").forEach(b=>b.onclick=()=>adopt([+b.dataset.take]));
+  $("#bTakeSel").onclick=()=>{const sel=$$("#ideas input:checked").map(x=>+x.dataset.i);if(!sel.length)return msg("Erst Häkchen setzen.",1);adopt(sel)};
+  $("#bClearIdeas").onclick=()=>{IDEAS=[];saveI();renderIdeas()};
+}
+function newTask(d){return{id:uid(),title:d.title||"Neue Aufgabe",giver:d.giver||"",doer:d.doer||"",summary:d.summary||"",cast:d.cast||S.chars.filter(c=>c.on).map(c=>c.name),style:d.style||S.style,images:[],videos:[],thumbs:[],captions:[],notes:"",created:Date.now()}}
+function adopt(idx){const add=idx.map(i=>IDEAS[i]).filter(Boolean);if(!add.length)return msg("Diese Nummer gibt es nicht.",1);
+  const made=add.map(d=>newTask(d));TASKS.unshift(...made);saveT();
+  IDEAS=IDEAS.filter((_,i)=>!idx.includes(i));saveI();renderIdeas();
+  msg(`${add.length} Aufgabe(n) übernommen.`,2);if(made.length===1){cur=made[0].id;go("detail")}else go("tasks")}
+async function genIdeas(n){
+  const cs=S.chars.filter(c=>c.on);if(cs.length<1)return msg("Wähle mindestens eine Figur.",1);
+  const req=$("#req").value.trim();
+  await run(`Erstelle ${n} Ideen`,async()=>{
+    const r=await api(`AUFTRAG: Erfinde ${n} sehr witzige, unterschiedliche Aufgaben-Ideen für die Figuren ${cs.map(c=>c.name).join(", ")}.
+Wunsch / Thema / Fan-Kommentar des Nutzers: ${req?`"${req}"`:"keiner, überrasche mit den lustigsten Ideen"}
+Enthält der Text einen Fan-Kommentar mit mehreren Wünschen, mache aus jedem Wunsch genau eine Aufgabe (übernimm die Wünsche treu, aber witzig ausgearbeitet).
+AUSGABE JSON: {"ideas":[{"title":"","giver":"","doer":"","summary":"2-3 Sätze Handlung inklusive Pointe"}]}`,{max:4000});
+    IDEAS=(r.ideas||[]).map(d=>Object.assign(d,{cast:cs.map(c=>c.name),style:S.style}));saveI();renderIdeas();
+  },`Hier sind ${n} Ideen, Boss.`)}
+$("#bIdeas").onclick=()=>genIdeas(+$("#nIdeas").value);
+$("#bOwn").onclick=()=>{const t=$("#oTitle").value.trim();if(!t)return msg("Bitte einen Titel eingeben.",1);
+  const nt=newTask({title:t,giver:$("#oGiver").value.trim(),doer:$("#oDoer").value.trim(),summary:$("#oSum").value.trim()});
+  TASKS.unshift(nt);saveT();["#oTitle","#oGiver","#oDoer","#oSum"].forEach(s=>$(s).value="");cur=nt.id;go("detail")};
+
+/* ---------- Aufgaben-Liste ---------- */
+function renderTasks(){
+  $("#taskList").innerHTML=TASKS.length?TASKS.map((t,i)=>`<div class="card" data-open="${t.id}" style="cursor:pointer"><div class="row" style="align-items:flex-start"><div class="num" style="flex:none">${i+1}</div><div style="flex:1"><div class="tt">${esc(t.title)}</div><div class="mut">${esc(t.giver)} → ${esc(t.doer)} · ${t.images.length} Bild-Prompts · ${t.videos.length} Video-Prompts</div></div></div></div>`).join("")
+  :`<p class="mut">Noch keine Aufgaben. Erstelle unter 💡 Ideen welche oder trag eine eigene ein.</p>`;
+  $$("[data-open]").forEach(c=>c.onclick=()=>{cur=c.dataset.open;go("detail")})}
+
+/* ---------- Aufgabe Detail ---------- */
+let OPEN={}; // offene Bearbeitungsboxen
+const IMGCHIPS=["Nahaufnahme","andere Perspektive","lustiger","mehr 3D, nicht 2D","Figuren genauer"];
+const VIDCHIPS=["kürzer","lustiger","ohne Musik & Lachen","deutlicher sprechen","echt singen","nur 1 Sprecher","mehr Bewegung"];
+function editBox(key,chips){return OPEN[key]?`<div class="edit"><div class="chips">${chips.map(c=>`<button type="button" class="chip" data-chip="${key}">${esc(c)}</button>`).join("")}</div>
+  <textarea data-ins="${key}" placeholder="Was soll anders sein? z.B. Chichi soll links stehen, Dialog lustiger …" style="margin-top:8px"></textarea>
+  <div class="row" style="margin-top:6px"><button class="btn sm" data-doedit="${key}" type="button">✨ Ändern</button><button class="btn sec sm" data-close="${key}" type="button">Schließen</button></div></div>`:""}
+function manBox(key,text){return OPEN["m"+key]?`<div class="edit"><textarea data-man="${key}" style="min-height:220px">${esc(text)}</textarea>
+  <div class="row" style="margin-top:6px"><button class="btn sm" data-mansave="${key}" type="button">💾 Speichern</button><button class="btn sec sm" data-close="m${key}" type="button">Abbrechen</button></div></div>`:""}
+function renderDetail(){
+  const t=task(cur);if(!t){go("tasks");return}
+  const el=$("#tab-detail");const st=styleOf(t);
+  el.innerHTML=`
+  <button class="btn sec sm" id="bBack" type="button">← Alle Aufgaben</button>
+  <div class="card">
+    <div class="tt" style="font-size:17px">${esc(t.title)}</div>
+    <div class="mut">${esc(t.giver)} → ${esc(t.doer)} · ${esc(t.cast.join(", "))} · ${esc(st.name)}</div>
+    <p>${esc(t.summary)}</p>
+    <div class="tools"><button class="btn sec sm" data-edit="task" type="button">✏️ Aufgabe ändern</button><button class="btn red sm" id="bDelTask" type="button">🗑️ Löschen</button></div>
+    ${editBox("task",["lustiger","andere Pointe","verrückter","kürzer"])}
+  </div>
+
+  <h3>🖼️ Bild-Prompts</h3>
+  <div class="row"><select id="dN" style="flex:0 0 90px">${[3,4,5,6,7].map(n=>`<option ${n==(t.images.length||S.nImg)?"selected":""}>${n}</option>`).join("")}</select>
+  <button class="btn" id="bImgs" type="button">${t.images.length?"🔄 Neu erstellen":"🖼️ Bild-Prompts erstellen"}</button></div>
+  ${t.images.length?`<button class="btn sec sm" id="bCopyImgs" type="button" style="margin-top:8px">📋 Alle Bild-Prompts kopieren</button>`:""}
+  ${t.images.map((im,i)=>`<div class="card"><div class="tt">${esc(im.title||"Bild "+(i+1))}</div><pre class="p">${esc(im.prompt)}</pre>
+    <div class="tools"><button class="btn sm" data-copy="i${i}" type="button">📋 Kopieren</button><button class="btn sec sm" data-edit="i${i}" type="button">✏️ Ändern lassen</button><button class="btn sec sm" data-open-man="i${i}" type="button">📝 Selbst bearbeiten</button></div>
+    ${editBox("i"+i,IMGCHIPS)}${manBox("i"+i,im.prompt)}</div>`).join("")}
+
+  <h3>📸 Fertige Bilder → 🎬 Video-Prompts</h3>
+  <p class="mut">Lade deine generierten Bilder hoch. Die Reihenfolge ist egal, Claude sortiert sie nach der Geschichte und schreibt zu jedem Bild den passenden Video-Prompt.</p>
+  <div class="thumbs">${t.thumbs.map((s,i)=>`<div class="th"><img src="${s}" alt="Bild ${i+1}"><button class="x" data-rm="${i}" type="button">✕</button></div>`).join("")}</div>
+  <div class="row" style="margin-top:8px"><button class="btn sec" id="bUp" type="button">📸 Bilder hochladen</button>
+  <button class="btn cy" id="bVidImg" type="button" ${t.thumbs.length?"":"disabled"}>🎬 Aus Bildern</button></div>
+  <button class="btn sec sm" id="bVidTxt" type="button" style="margin-top:8px" ${t.images.length?"":"disabled"}>🎬 Ohne Bilder, aus den Bild-Prompts</button>
+  ${t.notes?`<div class="notes">💡 ${esc(t.notes)}</div>`:""}
+  ${t.videos.length?`<button class="btn sec sm" id="bCopyVids" type="button" style="margin-top:8px">📋 Alle Video-Prompts kopieren</button>`:""}
+  ${t.videos.map((v,i)=>{const th=v.image&&t.thumbs[v.image-1];return `<div class="card"><div class="row" style="align-items:flex-start;flex-wrap:nowrap">${th?`<img class="vimg" src="${th}" alt="">`:""}<div style="flex:1;min-width:0">
+    <div class="tt">${esc(v.title||"Clip "+(i+1))}${v.override?'<span class="badge">selbst bearbeitet</span>':""}</div>
+    <div class="lines">${(v.lines||[]).map(l=>`<div class="ln"><span class="who ${l.mode==="sings"?"sing":""}">${esc(up(l.speaker))}${l.mode==="sings"?" 🎵":""}</span><span>${esc(l.text)}</span></div>`).join("")||'<span class="mut">ohne Dialog</span>'}</div></div></div>
+    <details><summary class="mut">Ganzen Prompt anzeigen</summary><pre class="p">${esc(vtext(v,t))}</pre></details>
+    <div class="tools" style="margin-top:6px"><button class="btn sm" data-copy="v${i}" type="button">📋 Kopieren</button><button class="btn sec sm" data-edit="v${i}" type="button">✏️ Ändern lassen</button><button class="btn sec sm" data-open-man="v${i}" type="button">📝 Selbst bearbeiten</button>${v.override?`<button class="btn sec sm" data-reset="${i}" type="button">↩️ Original</button>`:""}</div>
+    ${editBox("v"+i,VIDCHIPS)}${manBox("v"+i,vtext(v,t))}</div>`}).join("")}
+
+  <h3>📝 Video-Beschreibung</h3>
+  <button class="btn sec" id="bCap" type="button">📝 Beschreibungen erstellen</button>
+  ${t.captions.map((c,i)=>`<div class="card"><div class="mut">${esc(c.label)}</div><pre class="p">${esc(c.text)}</pre><button class="btn sm" data-copy="c${i}" type="button">📋 Kopieren</button></div>`).join("")}
+  `;
+  bindDetail(t);
+}
+function copy(text){const done=()=>msg("Kopiert ✓",2);
+  if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(text).then(done,()=>fallback());else fallback();
+  function fallback(){const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");done()}catch(e){msg("Kopieren ging nicht.",1)}ta.remove()}}
+function bindDetail(t){
+  $("#bBack").onclick=()=>go("tasks");
+  $("#bDelTask").onclick=()=>{if(confirm("Diese Aufgabe wirklich löschen?")){TASKS=TASKS.filter(x=>x.id!==t.id);delete FULL[t.id];saveT();go("tasks")}};
+  $("#bImgs").onclick=()=>genImages(t,+$("#dN").value);
+  const ci=$("#bCopyImgs");if(ci)ci.onclick=()=>copy(t.images.map(x=>`${x.title}\n${x.prompt}`).join("\n\n"));
+  const cv=$("#bCopyVids");if(cv)cv.onclick=()=>copy(t.videos.map(v=>`${v.title}\n${vtext(v,t)}`).join("\n\n"));
+  $("#bUp").onclick=()=>{$("#fImgs").dataset.t=t.id;$("#fImgs").click()};
+  $("#bVidImg").onclick=()=>genVideos(t,true);
+  $("#bVidTxt").onclick=()=>genVideos(t,false);
+  $("#bCap").onclick=()=>genCaptions(t);
+  $$("[data-rm]").forEach(b=>b.onclick=()=>{const i=+b.dataset.rm;t.thumbs.splice(i,1);if(FULL[t.id])FULL[t.id].splice(i,1);saveT();renderDetail()});
+  $$("[data-copy]").forEach(b=>b.onclick=()=>{const k=b.dataset.copy,i=+k.slice(1);
+    copy(k[0]==="i"?t.images[i].prompt:k[0]==="v"?vtext(t.videos[i],t):t.captions[i].text)});
+  $$("[data-edit]").forEach(b=>b.onclick=()=>{const k=b.dataset.edit;OPEN[k]=!OPEN[k];renderDetail()});
+  $$("[data-open-man]").forEach(b=>b.onclick=()=>{const k="m"+b.dataset.openMan;OPEN[k]=!OPEN[k];renderDetail()});
+  $$("[data-close]").forEach(b=>b.onclick=()=>{OPEN[b.dataset.close]=false;renderDetail()});
+  $$("[data-chip]").forEach(b=>b.onclick=()=>{const ta=$(`[data-ins="${b.dataset.chip}"]`);ta.value=(ta.value?ta.value+", ":"")+b.textContent});
+  $$("[data-doedit]").forEach(b=>b.onclick=()=>{const k=b.dataset.doedit,ins=$(`[data-ins="${k}"]`).value.trim();if(!ins)return msg("Schreib kurz, was anders sein soll.",1);doEdit(t,k,ins)});
+  $$("[data-mansave]").forEach(b=>b.onclick=()=>{const k=b.dataset.mansave,i=+k.slice(1),val=$(`[data-man="${k}"]`).value;
+    if(k[0]==="i")t.images[i].prompt=val;else t.videos[i].override=val;OPEN["m"+k]=false;saveT();renderDetail();msg("Gespeichert.",2)});
+  $$("[data-reset]").forEach(b=>b.onclick=()=>{delete t.videos[+b.dataset.reset].override;saveT();renderDetail()});
+}
+
+/* ---------- Generieren ---------- */
+async function genImages(t,n){
+  await run(`Schreibe ${n} Bild-Prompts`,async()=>{
+    const r=await api(`${taskCtx(t)}
+
+AUFTRAG: Schreibe genau ${n} Bild-Prompts für diese Aufgabe nach allen Bild-Regeln. Mindestens eine Nahaufnahme, abwechslungsreiche Perspektiven, sehr lustige Mimik.
+AUSGABE JSON: {"images":[{"title":"Bild 1: Die Wette (Halbtotale)","prompt":""}]}`,{t,max:9000});
+    t.images=r.images||[];saveT();renderDetail();
+  },`Die Bild-Prompts sind fertig, Boss.`)}
+async function genVideos(t,withImgs){
+  let imgs=[];
+  if(withImgs){imgs=FULL[t.id]||[];if(imgs.length!==t.thumbs.length||!imgs.length){msg("Bitte die Bilder neu hochladen (nach dem Neuladen der App sind nur Vorschaubilder gespeichert).",1);return}}
+  await run(withImgs?`Schaue ${imgs.length} Bilder an und schreibe Video-Prompts`:"Schreibe Video-Prompts",async()=>{
+    const base=withImgs?`Oben sind ${imgs.length} fertig generierte Bilder zu dieser Aufgabe (Reihenfolge beim Hochladen ist zufällig).
+1. Ordne sie in die logische Story-Reihenfolge.
+2. Schreibe zu JEDEM Bild genau einen Video-Prompt, der EXAKT vom Bild startet: wer ist sichtbar, wo steht/sitzt wer, was hält wer, Kameraeinstellung. Wer nicht sichtbar ist, spricht nicht.
+3. Wenn dir im Bild Fehler auffallen (Figur sieht anders aus, falsches Requisit, echte Tiere statt Menschen usw.), nenne sie kurz in "notes".`
+:`Es gibt noch keine fertigen Bilder. Schreibe zu jedem dieser Bild-Prompts genau einen Video-Prompt, der von diesem Bild startet:
+${t.images.map((x,i)=>`Bild ${i+1}: ${x.prompt}`).join("\n\n")}`;
+    const r=await api(`${taskCtx(t)}
+
+${base}
+Die Clips erzählen zusammen eine durchgehende, sehr witzige Geschichte. Kommt ein Lied vor, geht der Liedtext über die Clips weiter.
+AUSGABE JSON: {"videos":[{"image":1,"title":"Clip 1: …","scene":"","characters":[{"name":"","position":"","look":""}],"action":"","lines":[{"speaker":"","position":"","mode":"says","how":"","text":""}],"audio":""}],"notes":""}
+"image" ist die Nummer des Bildes (Bild 1, Bild 2 …), die Liste ist in Story-Reihenfolge.`,{t,images:imgs,max:14000});
+    t.videos=r.videos||[];t.notes=r.notes||"";saveT();OPEN={};renderDetail();
+  },`Die Video-Prompts sind fertig, Boss.`)}
+async function genCaptions(t){
+  await run("Schreibe Beschreibungen",async()=>{
+    const r=await api(`${taskCtx(t)}
+
+AUFTRAG: Schreibe 3 kurze, coole, lustige TikTok-Beschreibungen auf ${S.lang} mit passenden Emojis und 4-6 Hashtags (immer #wettendutraustdichnicht und #fyp).
+1) passend zu dieser Aufgabe, 2) mit einer Frage, die Kommentare bringt, 3) allgemein für die ganze Serie, ohne die Aufgabe zu verraten.
+AUSGABE JSON: {"captions":[{"label":"Zur Aufgabe","text":""}]}`,{t,max:2000});
+    t.captions=r.captions||[];saveT();renderDetail();
+  },"Die Beschreibungen sind fertig, Boss.")}
+async function doEdit(t,k,ins){
+  await run("Ändere",async()=>{
+    if(k==="task"){
+      const r=await api(`${taskCtx(t)}\n\nÄNDERUNGSWUNSCH: ${ins}\nSchreibe die Aufgabe mit dieser Änderung neu.\nAUSGABE JSON: {"title":"","giver":"","doer":"","summary":""}`,{t,max:2000});
+      Object.assign(t,{title:r.title||t.title,giver:r.giver||t.giver,doer:r.doer||t.doer,summary:r.summary||t.summary});
+    }else if(k[0]==="i"){const i=+k.slice(1);
+      const r=await api(`${taskCtx(t)}\n\nAKTUELLER BILD-PROMPT (${t.images[i].title}):\n${t.images[i].prompt}\n\nÄNDERUNGSWUNSCH: ${ins}\nSchreibe den kompletten Bild-Prompt mit dieser Änderung neu. Alles andere bleibt gleich.\nAUSGABE JSON: {"title":"","prompt":""}`,{t,max:3000});
+      t.images[i]={title:r.title||t.images[i].title,prompt:r.prompt||t.images[i].prompt};
+    }else{const i=+k.slice(1),v=t.videos[i];
+      const vcur=v.override?{title:v.title,fullPromptManuallyEdited:v.override}:v;
+      const r=await api(`${taskCtx(t)}\n\nAKTUELLER VIDEO-PROMPT (JSON):\n${JSON.stringify(vcur)}\n\nÄNDERUNGSWUNSCH: ${ins}\nSchreibe den Clip mit dieser Änderung neu. Alles andere bleibt gleich, Bild-Nummer bleibt gleich.\nAUSGABE JSON: {"video":{"image":${v.image||"null"},"title":"","scene":"","characters":[{"name":"","position":"","look":""}],"action":"","lines":[{"speaker":"","position":"","mode":"says","how":"","text":""}],"audio":""}}`,{t,max:4000});
+      if(r.video){t.videos[i]=Object.assign({image:v.image},r.video);delete t.videos[i].override}
+    }
+    OPEN[k]=false;saveT();renderDetail();
+  },"Erledigt, Boss.")}
+
+/* ---------- Bilder hochladen ---------- */
+function loadImg(file){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=fr.result};fr.onerror=rej;fr.readAsDataURL(file)})}
+function shrink(im,max,q){const s=Math.min(1,max/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext("2d").drawImage(im,0,0,c.width,c.height);return c.toDataURL("image/jpeg",q)}
+$("#fImgs").onchange=async e=>{const t=task(e.target.dataset.t||cur);const files=[...e.target.files];e.target.value="";if(!t||!files.length)return;
+  if(t.thumbs.length+files.length>10)return msg("Maximal 10 Bilder pro Aufgabe.",1);
+  msg("Lade Bilder …");FULL[t.id]=FULL[t.id]||[];
+  if(FULL[t.id].length!==t.thumbs.length){FULL[t.id]=[];t.thumbs=[]}
+  for(const f of files){try{const im=await loadImg(f);FULL[t.id].push(shrink(im,1100,.85).split(",")[1]);t.thumbs.push(shrink(im,240,.7))}catch(err){msg("Ein Bild konnte nicht gelesen werden.",1)}}
+  saveT();renderDetail();msg(`${files.length} Bild(er) bereit. Jetzt „🎬 Aus Bildern" tippen.`,2)};
+
+/* ---------- Einstellungen ---------- */
+function renderSpent(){const el=$("#spent");if(el)el.textContent=`Bisher verbraucht (Schätzung): ca. ${S.spent.toFixed(2).replace(".",",")} $`}
+function renderSet(){
+  $("#key").value=S.key;$("#model").innerHTML=MODELS.map(m=>`<option value="${m[0]}" ${m[0]===S.model?"selected":""}>${m[1]}</option>`).join("");
+  $("#ai").value=S.ai;$("#lang").value=S.lang;$("#nImg").value=S.nImg;$("#rules").value=S.rules;renderSpent();
+  $("#stEdit").innerHTML=Object.entries(S.styles).map(([k,v])=>`<option value="${k}">${esc(v.name)}</option>`).join("");$("#stEdit").value=S.style in S.styles?S.style:Object.keys(S.styles)[0];fillStyle();
+  renderChars();renderVoice()}
+$("#bShowKey").onclick=()=>{const k=$("#key");k.type=k.type==="password"?"text":"password"};
+$("#bSaveKey").onclick=()=>{S.key=$("#key").value.trim();saveS();msg(S.key?"Schlüssel gespeichert (nur auf diesem Gerät).":"Schlüssel entfernt.",2)};
+$("#bTestKey").onclick=async()=>{S.key=$("#key").value.trim();saveS();await run("Teste Verbindung",async()=>{const r=await api('Antworte nur mit JSON: {"ok":true}',{max:50});if(!r.ok)throw new Error("Unerwartete Antwort")},"Verbindung steht, Boss.")};
+$("#model").onchange=e=>{S.model=e.target.value;saveS()};
+["ai","lang","rules"].forEach(id=>$("#"+id).onchange=e=>{S[id]=e.target.value;saveS()});
+$("#nImg").onchange=e=>{S.nImg=+e.target.value;saveS()};
+function fillStyle(){const s=S.styles[$("#stEdit").value];if(!s)return;$("#stName").value=s.name;$("#stImg").value=s.img;$("#stEnd").value=s.end;$("#stVid").value=s.vid;$("#stKeep").value=s.keep}
+$("#stEdit").onchange=fillStyle;
+$("#bStSave").onclick=()=>{const k=$("#stEdit").value;S.styles[k]={name:$("#stName").value||"Stil",img:$("#stImg").value,end:$("#stEnd").value,vid:$("#stVid").value,keep:$("#stKeep").value};saveS();renderStyleSel();renderSet();msg("Stil gespeichert.",2)};
+$("#bStNew").onclick=()=>{const k="st"+uid();S.styles[k]={name:"Neuer Stil",img:"3D animation render, vertical 9:16",end:"No readable text.",vid:"3D animation, vertical 9:16, animate this image.",keep:"3D, not 2D"};saveS();renderSet();$("#stEdit").value=k;fillStyle();renderStyleSel()};
+$("#bStDel").onclick=()=>{const k=$("#stEdit").value;if(Object.keys(S.styles).length<2)return msg("Mindestens ein Stil muss bleiben.",1);if(!confirm("Stil löschen?"))return;delete S.styles[k];if(S.style===k)S.style=Object.keys(S.styles)[0];saveS();renderSet();renderStyleSel()};
+function renderChars(){
+  $("#charList").innerHTML=S.chars.map((c,i)=>`<details class="card" style="background:var(--card2)"><summary class="tt">${esc(c.name)}</summary>
+   <label>Name</label><input data-c="${i}" data-f="name" value="${esc(c.name)}">
+   <label>Aussehen (Englisch, für Bild-Prompts)</label><textarea data-c="${i}" data-f="look">${esc(c.look)}</textarea>
+   <label>Charakter / Sprechstil</label><textarea data-c="${i}" data-f="persona">${esc(c.persona)}</textarea>
+   <label>Feste Regel (z.B. „never holds a frying pan")</label><input data-c="${i}" data-f="rules" value="${esc(c.rules)}">
+   <label>Passender Stil</label><select data-c="${i}" data-f="style">${Object.entries(S.styles).map(([k,v])=>`<option value="${k}" ${k===c.style?"selected":""}>${esc(v.name)}</option>`).join("")}</select>
+   <button class="btn red sm" data-cdel="${i}" type="button" style="margin-top:8px">Figur löschen</button></details>`).join("");
+  $$("[data-c]").forEach(el=>el.onchange=()=>{const c=S.chars[+el.dataset.c],old=c.name;c[el.dataset.f]=el.value;
+    if(el.dataset.f==="name"&&old!==el.value)TASKS.forEach(t=>t.cast=t.cast.map(n=>n===old?el.value:n));saveS();saveT();renderCast()});
+  $$("[data-cdel]").forEach(b=>b.onclick=()=>{if(!confirm("Figur löschen?"))return;S.chars.splice(+b.dataset.cdel,1);saveS();renderChars();renderCast()})}
+$("#bCharNew").onclick=()=>{S.chars.push({id:uid(),name:"Neue Figur",look:"",persona:"",rules:"",style:S.style,on:false});saveS();renderChars();renderCast();const d=$$("#charList details");d[d.length-1].open=true};
+$("#bExport").onclick=()=>{const data={v:2,tasks:TASKS,chars:S.chars,styles:S.styles,rules:S.rules};const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:"application/json"}));a.download="jaufmannempire-sicherung.json";a.click()};
+$("#bImport").onclick=()=>$("#fImport").click();
+$("#fImport").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;try{const d=JSON.parse(await f.text());if(!confirm("Sicherung laden? Aktuelle Aufgaben, Figuren und Stile werden ersetzt."))return;
+  TASKS=d.tasks||[];S.chars=d.chars||S.chars;S.styles=d.styles||S.styles;S.rules=d.rules||"";saveT();saveS();renderCast();renderStyleSel();renderSet();msg("Sicherung geladen.",2)}catch(err){msg("Diese Datei ist keine gültige Sicherung.",1)}};
+
+/* ---------- Jarvis: Stimme ---------- */
+let speaking=false;
+const voices=()=>window.speechSynthesis?speechSynthesis.getVoices():[];
+function pickVoice(){const vs=voices();if(S.voice.name){const v=vs.find(v=>v.name===S.voice.name);if(v)return v}
+  const de=vs.filter(v=>/^de/i.test(v.lang));
+  return de.find(v=>!/female|frau|weib/i.test(v.name)&&/male|männ|mann|conrad|stefan|markus|hans|klaus|-deb-|-deg-/i.test(v.name))||de[0]||null}
+function say(text){
+  if(!S.voice.on||!window.speechSynthesis||!text)return;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="de-DE";const v=pickVoice();if(v)u.voice=v;u.pitch=+S.voice.pitch;u.rate=+S.voice.rate;
+    speaking=true;if(rec&&jvOn)try{rec.abort()}catch(_){}
+    const fin=()=>{if(!speaking)return;speaking=false;if(jvOn)setTimeout(startRec,200)};
+    u.onend=u.onerror=fin;setTimeout(fin,2500+text.length*90);speechSynthesis.speak(u)}catch(_){speaking=false;if(jvOn)startRec()}}
+function renderVoice(){
+  $("#vOn").checked=!!S.voice.on;$("#vPitch").value=S.voice.pitch;$("#vRate").value=S.voice.rate;$("#vPv").textContent=S.voice.pitch;$("#vRv").textContent=S.voice.rate;
+  const vs=voices(),de=vs.filter(v=>/^de/i.test(v.lang)),list=de.length?de:vs;
+  $("#vName").innerHTML=`<option value="">Automatisch (männlich, falls vorhanden)</option>`+list.map(v=>`<option ${v.name===S.voice.name?"selected":""}>${esc(v.name)}</option>`).join("")}
+if(window.speechSynthesis)speechSynthesis.onvoiceschanged=()=>{if(!$("#tab-set").classList.contains("hide"))renderVoice()};
+$("#vOn").onchange=e=>{S.voice.on=e.target.checked;saveS()};
+$("#vName").onchange=e=>{S.voice.name=e.target.value;saveS()};
+$("#vPitch").oninput=e=>{S.voice.pitch=+e.target.value;$("#vPv").textContent=e.target.value;saveS()};
+$("#vRate").oninput=e=>{S.voice.rate=+e.target.value;$("#vRv").textContent=e.target.value;saveS()};
+$("#bVTest").onclick=()=>{const on=S.voice.on;S.voice.on=true;say("Ja, Boss. Alle Systeme sind bereit.");S.voice.on=on};
+
+/* ---------- Jarvis: Spracherkennung ---------- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null,jvOn=false,awaitCmd=false,awaitT=null;
+const WAKE=/(jarvis|javis|jervis|jarwis|jarvi|jarvies|tscharvis|dscharvis|charvis|scharvis|schavis|davis|travis|charlies|charles|dschawis|tschawis)/i;
+function startRec(){if(!jvOn||speaking||!rec)return;try{rec.start()}catch(_){}}
+function jvToggle(){
+  if(jvOn){jvOn=false;try{rec&&rec.abort()}catch(_){}jvUI();say("Jarvis offline.");return}
+  if(!SR){msg("Sprachsteuerung geht nur in Google Chrome (Android oder PC).",1);return}
+  if(!window.isSecureContext||location.protocol==="file:"||location.protocol==="content:"){msg("Jarvis geht nur, wenn die App über einen https-Link geöffnet ist (z.B. GitHub Pages), nicht als heruntergeladene Datei.",1);return}
+  rec=new SR();rec.lang="de-DE";rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
+  rec.onstart=()=>{if(!busy)msg("🎙️ Jarvis hört zu. Sag „Jarvis“.",2)};
+  rec.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){const tx=e.results[i][0].transcript.trim();if(e.results[i].isFinal)heard(tx);else $("#heard").textContent="🎙️ höre: "+tx}};
+  rec.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed"){jvOn=false;jvUI();msg("Mikrofon blockiert. Erlaube das Mikrofon für diese Seite (Schloss-Symbol in der Adresszeile).",1)}
+    else if(e.error==="audio-capture")msg("Kein Mikrofon gefunden.",1);else if(e.error==="network")msg("Spracherkennung braucht Internet.",1)};
+  rec.onend=()=>{if(jvOn&&!speaking)setTimeout(startRec,250)};
+  jvOn=true;jvUI();go("ideas");if(S.voice.on&&window.speechSynthesis)say("Jarvis online. Ich höre, Boss.");else startRec()}
+function jvUI(){$("#jv").classList.toggle("on",jvOn);$("#jv").textContent=jvOn?"🎙️ Jarvis hört":"🎙️ Jarvis"}
+$("#jv").onclick=jvToggle;
+function heard(t){const low=t.toLowerCase(),m=low.match(WAKE);$("#heard").textContent="🎙️ gehört: „"+t+"“";
+  if(m){const rest=low.slice(m.index+m[0].length).replace(/^[\s,.!?:]+/,"");
+    if(rest.length<3){awaitCmd=true;clearTimeout(awaitT);awaitT=setTimeout(()=>awaitCmd=false,12000);$("#heard").textContent="🎙️ Jarvis wartet auf deinen Befehl …";say("Ja, Boss?");return}
+    return command(rest,t)}
+  if(awaitCmd){awaitCmd=false;clearTimeout(awaitT);command(low,t)}}
+const NUMW={eins:1,ein:1,eine:1,einen:1,zwei:2,drei:3,vier:4,"fünf":5,sechs:6,sieben:7,acht:8,neun:9,zehn:10,elf:11,"zwölf":12};
+const nums=c=>(c.match(/\d+|\b(eins|eine?n?|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|elf|zwölf)\b/g)||[]).map(x=>+x||NUMW[x]).filter(Boolean);
+function command(c,orig){
+  $("#heard").textContent="🎙️ „"+orig+"“";
+  if(/\b(stopp|stop|abbrechen|abbruch|halt)\b/.test(c)){if(busy&&ctl)ctl.abort();else say("Verstanden, Boss.");return}
+  if(/(nimm|nehme|übernimm|übernehme|wähle)/.test(c)&&!/(bild|video|beschreib)/.test(c)){const n=nums(c);if(!n.length)return say("Welche Nummern, Boss?");
+    if(!IDEAS.length)return say("Es gibt gerade keine Vorschläge, Boss.");adopt(n.map(x=>x-1));return say(`Sehr wohl. Aufgabe ${n.join(" und ")} übernommen.`)}
+  const pickTask=()=>{const n=nums(c.replace(/\d+\s*bild/,""));const m=c.match(/aufgabe\s*(\d+|\w+)/);let idx=null;if(m){const v=+m[1]||NUMW[m[1]];if(v)idx=v-1}
+    if(idx!==null&&TASKS[idx]){cur=TASKS[idx].id;go("detail")}return task(cur)||null};
+  if(/bild/.test(c)&&!/video/.test(c)){const t=pickTask();if(!t)return say("Öffne zuerst eine Aufgabe, Boss.");const n=(c.match(/(\d+|drei|vier|fünf|sechs|sieben)\s*bild/)||[])[1];
+    say("Sehr wohl, ich schreibe die Bild-Prompts.");return genImages(t,+(n&&(+n||NUMW[n]))||t.images.length||S.nImg)}
+  if(/video/.test(c)){const t=pickTask();if(!t)return say("Öffne zuerst eine Aufgabe, Boss.");const withImgs=(FULL[t.id]||[]).length>0&&FULL[t.id].length===t.thumbs.length;
+    if(!withImgs&&!t.images.length)return say("Ich brauche zuerst Bilder oder Bild-Prompts, Boss.");say("Sehr wohl, ich schreibe die Video-Prompts.");return genVideos(t,withImgs)}
+  if(/beschreib/.test(c)){const t=pickTask();if(!t)return say("Öffne zuerst eine Aufgabe, Boss.");say("Kommt sofort.");return genCaptions(t)}
+  if(/(aufgabe|aufgaben|idee|ideen|wette|wetten|challenge)/.test(c)){const n=Math.min(nums(c)[0]||5,12);
+    const topic=c.replace(/\b(mach|mache|erstelle|erstell|gib|schreib|schreibe|mir|bitte|neue|neuen|lustige|lustigen)\b/g,"").replace(/\d+|\b(drei|vier|fünf|sechs|sieben|acht|neun|zehn)\b/g,"").replace(/\b(aufgaben|aufgabe|ideen|idee)\b/g,"").replace(/\s+/g," ").trim();
+    go("ideas");$("#req").value=topic.length>3?topic:"";say(`Sehr wohl, Boss. ${n} Aufgaben kommen.`);return genIdeas(n)}
+  say("Das habe ich nicht verstanden, Boss.")}
+
+/* ---------- Start ---------- */
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+renderCast();renderStyleSel();renderIdeas();
+if(!S.key)msg("Willkommen! Trag zuerst unter ⚙️ Einstellungen deinen API-Schlüssel ein.");
+</script>
+</body>
+</html>
