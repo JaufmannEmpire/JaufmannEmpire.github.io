@@ -116,8 +116,23 @@ a{color:var(--cy)}
       <p class="mut">Bleibt nur auf diesem Gerät gespeichert und wird nur an Claude geschickt. Niemals im Chat oder an andere weitergeben.</p>
       <div class="row"><input id="key" type="password" autocomplete="off" placeholder="sk-ant-api03-…"><button class="btn sec sm" id="bShowKey" type="button" style="flex:0 0 auto">👁️</button></div>
       <div class="row" style="margin-top:8px"><button class="btn sm" id="bSaveKey" type="button">Speichern</button><button class="btn sec sm" id="bTestKey" type="button">Verbindung testen</button></div>
-      <label>KI-Modell</label><select id="model"></select>
+      <label>Claude-Modell</label><select id="model"></select>
       <p class="mut" id="spent"></p>
+    </div>
+    <div class="card">
+      <div class="tt">🤖 Welche KI schreibt die Prompts?</div>
+      <select id="prov">
+        <option value="claude">Claude</option>
+        <option value="openai">ChatGPT</option>
+        <option value="mix">Claude schreibt, ChatGPT prüft</option>
+        <option value="mix2">ChatGPT schreibt, Claude prüft</option>
+      </select>
+      <label class="row" style="color:var(--tx);margin-top:10px;flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" id="chk" style="width:22px;height:22px;flex:none"> 🔍 Doppel-Check: jeder Prompt wird nach dem Schreiben nochmal geprüft und verbessert (genauer, ca. doppelte Kosten)</label>
+      <label>ChatGPT API-Schlüssel (von platform.openai.com)</label>
+      <div class="row"><input id="okey" type="password" autocomplete="off" placeholder="sk-…"><button class="btn sec sm" id="bShowOKey" type="button" style="flex:0 0 auto">👁️</button></div>
+      <div class="row" style="margin-top:8px"><button class="btn sm" id="bSaveOKey" type="button">Speichern</button><button class="btn sec sm" id="bTestOKey" type="button">ChatGPT testen</button></div>
+      <label>ChatGPT-Modell</label><select id="omodel"></select>
+      <p class="mut">Der ChatGPT-Schlüssel wird auch für die natürliche Jarvis-Stimme gebraucht. Er bleibt nur auf diesem Gerät.</p>
     </div>
     <div class="card">
       <div class="tt">🎬 Video &amp; Sprache</div>
@@ -151,8 +166,12 @@ a{color:var(--cy)}
     </div>
     <div class="card">
       <div class="tt">🎙️ Jarvis</div>
-      <label class="row" style="color:var(--tx)"><input type="checkbox" id="vOn" style="width:22px;height:22px;flex:none"> Jarvis antwortet mit Stimme</label>
-      <label>Stimme</label><select id="vName"></select>
+      <label class="row" style="color:var(--tx);flex-wrap:nowrap"><input type="checkbox" id="vOn" style="width:22px;height:22px;flex:none"> Jarvis antwortet mit Stimme</label>
+      <label>Stimmen-Art</label>
+      <select id="vEng"><option value="ai">🎧 Natürliche Männerstimme (ChatGPT-Stimme, empfohlen)</option><option value="device">📱 Handy-Stimme (kostenlos, klingt eher nach Roboter)</option></select>
+      <div id="vAiBox"><label>Natürliche Stimme</label><select id="vAi"></select>
+      <label>Wie soll Jarvis klingen?</label><textarea id="vStyle"></textarea></div>
+      <div id="vDevBox"><label>Handy-Stimme</label><select id="vName"></select></div>
       <div class="row"><div><label>Tiefe <span id="vPv"></span></label><input type="range" id="vPitch" min="0.5" max="1.5" step="0.05"></div><div><label>Tempo <span id="vRv"></span></label><input type="range" id="vRate" min="0.6" max="1.4" step="0.05"></div></div>
       <button class="btn sec sm" id="bVTest" type="button" style="margin-top:8px">▶️ Stimme testen</button>
       <p class="mut">Die Stimmen kommen von deinem Handy. Für eine tiefe Männerstimme: Android-Einstellungen → Text-in-Sprache → Sprachausgabe von Google → Stimmdaten installieren → Deutsch → männliche Stimme wählen. Danach hier auswählen.</p>
@@ -194,8 +213,10 @@ const DEFCHARS=[
 const LANGEN={Deutsch:"German",Englisch:"English",Türkisch:"Turkish",Spanisch:"Spanish"};
 let S=Object.assign({key:"",model:MODELS[0][0],ai:"Grok",lang:"Deutsch",nImg:3,rules:"",style:"pixar",spent:0,
   styles:JSON.parse(JSON.stringify(DEFSTYLES)),chars:JSON.parse(JSON.stringify(DEFCHARS)),
-  voice:{on:true,name:"",pitch:0.8,rate:0.95},
+  voice:{on:true,name:"",pitch:0.8,rate:0.95,eng:"ai",ai:"onyx",style:"Sprich fließend und natürlich auf Deutsch mit warmer, tiefer, ruhiger Männerstimme, wie ein eleganter, souveräner KI-Butler: höflich, selbstsicher, leicht trocken-humorvoll. Kein Roboterklang, natürliche Betonung und Pausen."},
+  prov:"claude",check:true,okey:"",omodel:"gpt-6.1-sol",
   humor:"FREEZER: „Dose steht drei Millimeter schief … direkt Punktabzug. Was ist das hier für ein Saftladen?!“\nGOKU: „Freezer … du sollst hier testen und nicht den Laden erobern!“\nFREEZER: „Goku, ich habe Planeten strenger bewertet als diesen Aldi.“\nVEGETA: „Ich bin der Prinz aller Saiyajins … und ich kenne diesen Mann nicht.“\nBÄCKER: „Gnädige Frau … das ist eine Bäckerei.“\nBULMA: „Danke, danke! Ich wollte eigentlich nur Nudeln kaufen.“"},LS.get("je2_s",{}));
+S.voice=Object.assign({on:true,name:"",pitch:0.8,rate:0.95,eng:"ai",ai:"onyx",style:"Sprich fließend und natürlich auf Deutsch mit warmer, tiefer, ruhiger Männerstimme, wie ein eleganter, souveräner KI-Butler: höflich, selbstsicher, leicht trocken-humorvoll. Kein Roboterklang, natürliche Betonung und Pausen."},S.voice||{});
 let TASKS=LS.get("je2_t",[]);
 let IDEAS=LS.get("je2_i",[]);
 const FULL={}; // hochgeladene Bilder in voller Größe (nur im Speicher)
@@ -218,13 +239,15 @@ async function run(label,fn,done){if(busy){msg("Ich arbeite noch, kurz warten.",
   finally{busy=false;lock(false)}}
 function errText(e){
   if(e.name==="AbortError")return "Abgebrochen.";
-  const s=e.status,m=(e.message||"").toLowerCase();
-  if(s===401)return "API-Schlüssel ungültig. Prüfe ihn unter ⚙️ Einstellungen.";
+  const s=e.status,m=(e.message||"").toLowerCase(),who=e.who||"Claude";
+  if(e.code==="insufficient_quota")return "Kein Guthaben mehr bei ChatGPT (OpenAI). Lade auf platform.openai.com Guthaben auf.";
+  if(e.code==="model_not_found")return "Dieses ChatGPT-Modell ist für deinen Schlüssel nicht verfügbar. Wähle unter ⚙️ Optionen ein anderes.";
+  if(s===401)return `${who}-Schlüssel ungültig. Prüfe ihn unter ⚙️ Optionen.`;
   if(s===403)return "Kein Zugriff mit diesem Schlüssel. Prüfe ihn in der Claude Console.";
-  if(m.includes("credit")||m.includes("balance"))return "Kein Guthaben mehr auf deinem Claude-Konto. Lade in der Console Guthaben auf.";
+  if(m.includes("credit")||m.includes("balance")||m.includes("quota"))return `Kein Guthaben mehr bei ${who}. Bitte Guthaben aufladen.`;
   if(s===429)return "Zu viele Anfragen. Kurz warten und nochmal tippen.";
   if(s===529||s===503||m.includes("overloaded"))return "Claude ist gerade überlastet. Nochmal tippen.";
-  if(s===400)return "Anfrage abgelehnt: "+(e.message||"")+"";
+  if(s===400)return `${who} hat die Anfrage abgelehnt: `+(e.message||"");
   if(e instanceof TypeError)return "Keine Verbindung. Internet prüfen und nochmal tippen.";
   if(e instanceof SyntaxError)return "Antwort unvollständig (zu lang?). Nochmal tippen oder weniger Bilder wählen.";
   return "Fehler: "+(e.message||e);
@@ -263,7 +286,8 @@ VIDEO-PROMPT-REGELN (die App baut aus deinen Feldern den fertigen Prompt)
 - "scene": Ort, Licht und Kamerabewegung, 1-2 englische Sätze.
 - "characters": JEDE im Bild sichtbare Hauptfigur (auch wenn sie nur im Hintergrund steht): "name", "position" (z.B. "behind Frieza in the background, on the left"), "look" (kurz: Haare, Kleidung, was sie hält), "voice" (z.B. "adult male voice, cheerful").
 - "stay": englische Regel, wer an seiner Position bleibt (z.B. "Goku stays behind Frieza in the background the whole time and does not move into the foreground.").
-- "beats": das Drehbuch in fester Reihenfolge. Jeder Beat hat "action" (1 kurzer englischer Satz, höchstens 1-2 einfache, gut sichtbare Bewegungen) und optional eine Sprechzeile: "speaker", "mode" (says | whispers | shouts | mutters | sings), "how" (Tonfall auf Englisch), "text" (Satz auf ${L}). Typisch 4-6 Beats: Aktion → Zeile → Reaktion → Zeile → Reaktion → Pointe. Das Video ist nur 6-10 Sekunden lang, also KEINE langen Aktionsketten.
+- "beats": das Drehbuch in fester Reihenfolge. Jeder Beat hat "action" (1 kurzer englischer Satz, höchstens 1-2 einfache, gut sichtbare Bewegungen) und optional eine Sprechzeile: "speaker", "mode" (says | whispers | shouts | mutters | sings), "how" (WIE es gesagt wird, Englisch: Emotion + Tonfall + Tempo + Lautstärke, z.B. "outraged, voice cracking, fast and loud" oder "deadpan, slow, dangerously calm"), "face" (Mimik und Körpersprache beim Sprechen, Englisch, z.B. "eyes narrowed, one eyebrow twitching, lips pressed together"), "text" (Satz auf ${L}).
+- EMOTIONEN: Jede Sprechzeile bekommt eine Emotion, die exakt zum Inhalt, zum Charakter und zur Situation passt, und die Emotionen steigern sich über den Clip (z.B. genervt → empört → eiskalte Pointe). Der Satzinhalt und die Emotion müssen zusammenpassen: ein Konter klingt trocken oder triumphierend, eine Panik klingt hektisch, ein Flüstern ist leise. Typisch 4-6 Beats: Aktion → Zeile → Reaktion → Zeile → Reaktion → Pointe. Das Video ist nur 6-10 Sekunden lang, also KEINE langen Aktionsketten.
 - Dialogtext NORMAL geschrieben, niemals gezogene Buchstaben wie "Freeeund". Lange Töne beim Singen in "how" beschreiben. Gesang: mode "sings", eigener erfundener Liedtext, kurz, reimt sich.
 - "audio": Geräusche konkret. Standard: keine Musik, kein Lachen, keine Hintergrundstimmen, nur leise Umgebungsgeräusche. Musik nur, wenn die Szene sie braucht (Karaoke, Tanz) oder der Nutzer es will.
 
@@ -281,21 +305,38 @@ ${S.humor||""}
 AUSGABE: nur gültiges JSON, ohne Text davor oder danach, exakt im verlangten Schema.`}
 
 const PRICE=m=>{const r=MODELS.find(x=>x[0]===m)||MODELS[0];return[r[2],r[3]]};
-async function api(prompt,{t=null,images=[],max=12000}={}){
-  if(!S.key){msg("Bitte zuerst deinen API-Schlüssel unter ⚙️ Einstellungen eintragen.",1);go("set");throw new Error("nokey")}
+const OMODELS=[["gpt-6.1-sol","GPT-6.1 Sol · sehr gut (empfohlen)"],["gpt-6-astra","GPT-6 Astra · beste Qualität, teurer"],["gpt-6-luna","GPT-6 Luna · am günstigsten"]];
+function needKey(which){const k=which==="openai"?S.okey:S.key;if(!k){msg(which==="openai"?"Bitte zuerst deinen ChatGPT-Schlüssel unter ⚙️ Optionen eintragen.":"Bitte zuerst deinen Claude-Schlüssel unter ⚙️ Optionen eintragen.",1);go("set");throw new Error("nokey")}return k.trim()}
+const writer=()=>S.prov==="openai"||S.prov==="mix2"?"openai":"claude";
+const checker=()=>S.prov==="mix"?"openai":S.prov==="mix2"?"claude":writer();
+function pj(txt){const a=txt.indexOf("{"),b=txt.lastIndexOf("}");if(a<0||b<a)throw new SyntaxError("no json");return JSON.parse(txt.slice(a,b+1))}
+async function api(prompt,{t=null,images=[],max=12000,via=null}={}){
+  const who=via||writer();
+  if(who==="openai")return apiOpenAI(prompt,{t,images,max});
+  const key=needKey("claude");
   const content=[];
   images.forEach((b64,i)=>{content.push({type:"text",text:`Bild ${i+1}:`});content.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}})});
   content.push({type:"text",text:prompt});
   const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",signal:ctl&&ctl.signal,
-    headers:{"x-api-key":S.key.trim(),"anthropic-version":"2023-06-01","content-type":"application/json","anthropic-dangerous-direct-browser-access":"true"},
+    headers:{"x-api-key":key,"anthropic-version":"2023-06-01","content-type":"application/json","anthropic-dangerous-direct-browser-access":"true"},
     body:JSON.stringify({model:S.model,max_tokens:max,system:SYS(t),messages:[{role:"user",content}]})});
   let j={};try{j=await r.json()}catch(_){}
-  if(!r.ok){const e=new Error((j.error&&j.error.message)||("HTTP "+r.status));e.status=r.status;throw e}
+  if(!r.ok){const e=new Error((j.error&&j.error.message)||("HTTP "+r.status));e.status=r.status;e.who="Claude";throw e}
   if(j.usage){const[pi,po]=PRICE(S.model);S.spent+=(j.usage.input_tokens*pi+j.usage.output_tokens*po)/1e6;saveS();renderSpent()}
-  const txt=(j.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
-  const a=txt.indexOf("{"),b=txt.lastIndexOf("}");
-  if(a<0||b<a)throw new SyntaxError("no json");
-  return JSON.parse(txt.slice(a,b+1));
+  return pj((j.content||[]).filter(b=>b.type==="text").map(b=>b.text).join(""));
+}
+async function apiOpenAI(prompt,{t=null,images=[],max=12000}={}){
+  const key=needKey("openai");
+  const content=[];
+  images.forEach((b64,i)=>{content.push({type:"text",text:`Bild ${i+1}:`});content.push({type:"image_url",image_url:{url:"data:image/jpeg;base64,"+b64}})});
+  content.push({type:"text",text:prompt});
+  const r=await fetch("https://api.openai.com/v1/chat/completions",{method:"POST",signal:ctl&&ctl.signal,
+    headers:{"Authorization":"Bearer "+key,"content-type":"application/json"},
+    body:JSON.stringify({model:S.omodel,max_completion_tokens:max,response_format:{type:"json_object"},messages:[{role:"system",content:SYS(t)},{role:"user",content}]})});
+  let j={};try{j=await r.json()}catch(_){}
+  if(!r.ok){const e=new Error((j.error&&j.error.message)||("HTTP "+r.status));e.status=r.status;e.who="ChatGPT";e.code=j.error&&j.error.code;throw e}
+  const m=j.choices&&j.choices[0]&&j.choices[0].message;
+  return pj((m&&m.content)||"");
 }
 const taskCtx=t=>`AUFGABE: ${t.title}\nWer stellt die Wette: ${t.giver} → wer muss sie machen: ${t.doer}\nHandlung: ${t.summary}\nFiguren: ${t.cast.join(", ")}`;
 
@@ -345,10 +386,12 @@ function vtextBeats(v,t){
   bs.forEach(b=>{
     if(b.action)L.push("",b.action);
     if(b.speaker&&b.text){const sp=up(b.speaker),sing=b.mode==="sings",c=ch.find(x=>up(x.name)===sp);
-      L.push("",`ONLY ${sp} ${sing?"SINGS":"SPEAKS"}:`);
+      const who=c?` (${sp} = ${[c.position,c.look].filter(Boolean).join(", ").slice(0,110)})`:"";
+      L.push("",`NOW ONLY ${sp} ${sing?"SINGS":"SPEAKS"}${who}:`);
+      if(b.face)L.push(`${sp}'s face: ${b.face}.`);
       L.push(`${sp}, ${[b.how,(c&&c.voice)||"",sing?"real singing voice, clear pitch, NOT speaking":(b.mode&&b.mode!=="says"?b.mode:"")].filter(Boolean).join(", ")}:`);
       L.push(`„${b.text}“`);
-      L.push(`${sp} closes the mouth.`)}
+      L.push(`${sp} closes the mouth. ${names.filter(n=>n!==sp).map(n=>n+"'s mouth stays closed").join(", ")}${names.length>1?".":""}`.trim())}
   });
   L.push("");
   if(spk.length>1)L.push(`STRICT SPEAKER ORDER: ${spk.map(b=>up(b.speaker)).join(" → ")}.`);
@@ -496,7 +539,9 @@ async function genImages(t,n){
 
 AUFTRAG: Schreibe genau ${n} Bild-Prompts für diese Aufgabe nach allen Bild-Regeln. Mindestens eine Nahaufnahme, abwechslungsreiche Perspektiven, sehr lustige Mimik.
 AUSGABE JSON: {"images":[{"title":"Bild 1: Die Wette (Halbtotale)","prompt":""}]}`,{t,max:9000});
-    t.images=r.images||[];saveT();renderDetail();
+    let ims=r.images||[];
+    if(S.check&&ims.length){tick(`🔍 Doppel-Check mit ${checker()==="openai"?"ChatGPT":"Claude"}`);ims=await reviewImages(t,ims)}
+    t.images=ims;saveT();renderDetail();
   },`Die Bild-Prompts sind fertig, Boss.`)}
 async function genVideos(t,withImgs){
   let imgs=[];
@@ -512,10 +557,40 @@ ${t.images.map((x,i)=>`Bild ${i+1}: ${x.prompt}`).join("\n\n")}`;
 
 ${base}
 Die Clips erzählen zusammen eine durchgehende, sehr witzige Geschichte. Kommt ein Lied vor, geht der Liedtext über die Clips weiter.
-AUSGABE JSON: {"videos":[{"image":1,"title":"Clip 1: …","premise":"","scene":"","characters":[{"name":"","position":"","look":"","voice":""}],"stay":"","beats":[{"action":"","speaker":"","mode":"says","how":"","text":""}],"audio":""}],"notes":""}
+AUSGABE JSON: {"videos":[{"image":1,"title":"Clip 1: …","premise":"","scene":"","characters":[{"name":"","position":"","look":"","voice":""}],"stay":"","beats":[{"action":"","speaker":"","mode":"says","how":"","face":"","text":""}],"audio":""}],"notes":""}
 "image" ist die Nummer des Bildes (Bild 1, Bild 2 …), die Liste ist in Story-Reihenfolge.`,{t,images:imgs,max:14000});
-    t.videos=r.videos||[];t.notes=r.notes||"";saveT();OPEN={};renderDetail();
+    let vids=r.videos||[];
+    if(S.check&&vids.length){tick(`🔍 Doppel-Check mit ${checker()==="openai"?"ChatGPT":"Claude"}`);vids=await reviewVideos(t,vids,imgs)}
+    t.videos=vids;t.notes=r.notes||"";saveT();OPEN={};renderDetail();
   },`Die Video-Prompts sind fertig, Boss.`)}
+async function reviewVideos(t,vids,imgs){
+  try{const r=await api(`${taskCtx(t)}
+
+Du bist jetzt der strenge Prüfer und Gag-Doktor. Hier sind die Video-Prompts als JSON${imgs.length?" (die Bilder sind oben angehängt, \"image\" ist die Bildnummer)":""}:
+${JSON.stringify(vids)}
+
+Prüfe JEDEN Clip und verbessere ihn direkt:
+1. Stimmen Figuren, Positionen, Haltungen und Requisiten exakt mit dem Bild überein? Fehlt eine sichtbare Figur? Spricht jemand, der nicht sichtbar ist?
+2. Ist bei jeder Sprechzeile klar, WER spricht (richtiger Name, richtige Position)? Gibt es Stellen, an denen die Video-KI die Sprecher verwechseln könnte? Dann eindeutiger machen.
+3. Reden die Figuren miteinander (Aufbau → Konter → Pointe)? Ist jede Zeile kurz, sofort verständlich und wirklich lustig im Stil der Humor-Vorbilder? Schwache Gags durch bessere ersetzen.
+4. Passt die Emotion ("how" und "face") genau zum Satz und zum Charakter, mit Steigerung?
+5. Sind die Aktionen einfach genug für 6-10 Sekunden? Zu lange Aktionsketten kürzen.
+6. Keine gezogenen Buchstaben, keine Zeitangaben, keine Fehler im Deutsch.
+Gib ALLE Clips zurück, in derselben Reihenfolge, mit derselben Bildnummer und im selben Schema.
+AUSGABE JSON: {"videos":[...]}`,{t,images:imgs,max:14000,via:checker()});
+    return (r.videos&&r.videos.length===vids.length)?r.videos.map((v,i)=>Object.assign({image:vids[i].image},v)):vids}
+  catch(e){if(e.name==="AbortError"||e.message==="nokey")throw e;msg("Doppel-Check übersprungen: "+errText(e),1);return vids}}
+async function reviewImages(t,ims){
+  try{const r=await api(`${taskCtx(t)}
+
+Du bist jetzt der strenge Prüfer. Hier sind die Bild-Prompts als JSON:
+${JSON.stringify(ims)}
+
+Prüfe und verbessere JEDEN Bild-Prompt: Stil-Anfang und -Ende vorhanden? Jede Figur mit komplettem Aussehen, Position, Haltung, Mimik? Nur Dinge, die zur Geschichte gehören? Eindeutige Formulierungen (keine echten Tiere, wenn Menschen etwas nachahmen)? Keine 2D-auslösenden Wörter? Feste Regeln der Figuren eingehalten? Perspektiven abwechslungsreich, mindestens eine Nahaufnahme? Mimik wirklich lustig?
+Gib ALLE Bild-Prompts zurück, gleiche Reihenfolge.
+AUSGABE JSON: {"images":[{"title":"","prompt":""}]}`,{t,max:9000,via:checker()});
+    return (r.images&&r.images.length===ims.length)?r.images:ims}
+  catch(e){if(e.name==="AbortError"||e.message==="nokey")throw e;msg("Doppel-Check übersprungen: "+errText(e),1);return ims}}
 async function genCaptions(t){
   await run("Schreibe Beschreibungen",async()=>{
     const r=await api(`${taskCtx(t)}
@@ -535,7 +610,7 @@ async function doEdit(t,k,ins){
       t.images[i]={title:r.title||t.images[i].title,prompt:r.prompt||t.images[i].prompt};
     }else{const i=+k.slice(1),v=t.videos[i];
       const vcur=v.override?{title:v.title,fullPromptManuallyEdited:v.override}:v;
-      const r=await api(`${taskCtx(t)}\n\nAKTUELLER VIDEO-PROMPT (JSON):\n${JSON.stringify(vcur)}\n\nÄNDERUNGSWUNSCH: ${ins}\nSchreibe den Clip mit dieser Änderung neu. Alles andere bleibt gleich, Bild-Nummer bleibt gleich.\nAUSGABE JSON: {"video":{"image":${v.image||"null"},"title":"Clip 1: …","premise":"","scene":"","characters":[{"name":"","position":"","look":"","voice":""}],"stay":"","beats":[{"action":"","speaker":"","mode":"says","how":"","text":""}],"audio":""}}`,{t,max:4000});
+      const r=await api(`${taskCtx(t)}\n\nAKTUELLER VIDEO-PROMPT (JSON):\n${JSON.stringify(vcur)}\n\nÄNDERUNGSWUNSCH: ${ins}\nSchreibe den Clip mit dieser Änderung neu. Alles andere bleibt gleich, Bild-Nummer bleibt gleich.\nAUSGABE JSON: {"video":{"image":${v.image||"null"},"title":"Clip 1: …","premise":"","scene":"","characters":[{"name":"","position":"","look":"","voice":""}],"stay":"","beats":[{"action":"","speaker":"","mode":"says","how":"","face":"","text":""}],"audio":""}}`,{t,max:4000});
       if(r.video){t.videos[i]=Object.assign({image:v.image},r.video);delete t.videos[i].override}
     }
     OPEN[k]=false;saveT();renderDetail();
@@ -555,6 +630,8 @@ $("#fImgs").onchange=async e=>{const t=task(e.target.dataset.t||cur);const files
 function renderSpent(){const el=$("#spent");if(el)el.textContent=`Bisher verbraucht (Schätzung): ca. ${S.spent.toFixed(2).replace(".",",")} $`}
 function renderSet(){
   $("#key").value=S.key;$("#model").innerHTML=MODELS.map(m=>`<option value="${m[0]}" ${m[0]===S.model?"selected":""}>${m[1]}</option>`).join("");
+  $("#prov").value=S.prov;$("#chk").checked=!!S.check;$("#okey").value=S.okey||"";
+  $("#omodel").innerHTML=OMODELS.map(m=>`<option value="${m[0]}" ${m[0]===S.omodel?"selected":""}>${m[1]}</option>`).join("");
   $("#ai").value=S.ai;$("#lang").value=S.lang;$("#nImg").value=S.nImg;$("#rules").value=S.rules;$("#humor").value=S.humor||"";renderSpent();
   $("#stEdit").innerHTML=Object.entries(S.styles).map(([k,v])=>`<option value="${k}">${esc(v.name)}</option>`).join("");$("#stEdit").value=S.style in S.styles?S.style:Object.keys(S.styles)[0];fillStyle();
   renderChars();renderVoice()}
@@ -562,6 +639,12 @@ $("#bShowKey").onclick=()=>{const k=$("#key");k.type=k.type==="password"?"text":
 $("#bSaveKey").onclick=()=>{S.key=$("#key").value.trim();saveS();msg(S.key?"Schlüssel gespeichert (nur auf diesem Gerät).":"Schlüssel entfernt.",2)};
 $("#bTestKey").onclick=async()=>{S.key=$("#key").value.trim();saveS();await run("Teste Verbindung",async()=>{const r=await api('Antworte nur mit JSON: {"ok":true}',{max:50});if(!r.ok)throw new Error("Unerwartete Antwort")},"Verbindung steht, Boss.")};
 $("#model").onchange=e=>{S.model=e.target.value;saveS()};
+$("#prov").onchange=e=>{S.prov=e.target.value;saveS();const need=S.prov!=="claude"&&!S.okey;msg(need?"Trag unten noch deinen ChatGPT-Schlüssel ein.":"Gespeichert.",need?1:2)};
+$("#chk").onchange=e=>{S.check=e.target.checked;saveS()};
+$("#omodel").onchange=e=>{S.omodel=e.target.value;saveS()};
+$("#bShowOKey").onclick=()=>{const k=$("#okey");k.type=k.type==="password"?"text":"password"};
+$("#bSaveOKey").onclick=()=>{S.okey=$("#okey").value.trim();saveS();msg(S.okey?"ChatGPT-Schlüssel gespeichert (nur auf diesem Gerät).":"ChatGPT-Schlüssel entfernt.",2)};
+$("#bTestOKey").onclick=async()=>{S.okey=$("#okey").value.trim();saveS();await run("Teste ChatGPT",async()=>{const r=await api('Antworte nur mit JSON: {"ok":true}',{max:200,via:"openai"});if(!r.ok)throw new Error("Unerwartete Antwort")},"ChatGPT ist verbunden, Boss.")};
 ["ai","lang","rules","humor"].forEach(id=>$("#"+id).onchange=e=>{S[id]=e.target.value;saveS()});
 $("#nImg").onchange=e=>{S.nImg=+e.target.value;saveS()};
 function fillStyle(){const s=S.styles[$("#stEdit").value];if(!s)return;$("#stName").value=s.name;$("#stImg").value=s.img;$("#stEnd").value=s.end;$("#stVid").value=s.vid;$("#stKeep").value=s.keep}
@@ -593,26 +676,48 @@ const voices=()=>window.speechSynthesis?speechSynthesis.getVoices():[];
 function pickVoice(){const vs=voices();if(S.voice.name){const v=vs.find(v=>v.name===S.voice.name);if(v)return v}
   const de=vs.filter(v=>/^de/i.test(v.lang));
   return de.find(v=>!/female|frau|weib/i.test(v.name)&&/male|männ|mann|conrad|stefan|markus|hans|klaus|-deb-|-deg-/i.test(v.name))||de[0]||null}
-function say(text){
-  if(!S.voice.on||!window.speechSynthesis||!text)return;
+const AIVOICES=[["onyx","Onyx · tief und ruhig"],["ash","Ash · klar und selbstbewusst"],["cedar","Cedar · warm und natürlich"],["echo","Echo · weich"],["verse","Verse · lebendig"],["ballad","Ballad · sanft, britisch angehaucht"]];
+const TTSCACHE={};let curAudio=null;
+function afterSpeak(){speaking=false;if(jvOn)setTimeout(startRec,200)}
+function sayDevice(text){
+  if(!window.speechSynthesis)return afterSpeak();
   try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="de-DE";const v=pickVoice();if(v)u.voice=v;u.pitch=+S.voice.pitch;u.rate=+S.voice.rate;
-    speaking=true;if(rec&&jvOn)try{rec.abort()}catch(_){}
-    const fin=()=>{if(!speaking)return;speaking=false;if(jvOn)setTimeout(startRec,200)};
-    u.onend=u.onerror=fin;setTimeout(fin,2500+text.length*90);speechSynthesis.speak(u)}catch(_){speaking=false;if(jvOn)startRec()}}
+    let done=false;const fin=()=>{if(done)return;done=true;afterSpeak()};u.onend=u.onerror=fin;setTimeout(fin,2500+text.length*90);speechSynthesis.speak(u)}catch(_){afterSpeak()}}
+async function sayAI(text){
+  const key=(S.okey||"").trim();if(!key)return sayDevice(text);
+  const ck=S.voice.ai+"|"+S.voice.style+"|"+text;
+  try{let url=TTSCACHE[ck];
+    if(!url){const r=await fetch("https://api.openai.com/v1/audio/speech",{method:"POST",headers:{"Authorization":"Bearer "+key,"content-type":"application/json"},
+        body:JSON.stringify({model:"gpt-4o-mini-tts",voice:S.voice.ai||"onyx",input:text,instructions:S.voice.style||"",response_format:"mp3"})});
+      if(!r.ok)throw new Error("tts "+r.status);
+      url=URL.createObjectURL(await r.blob());if(text.length<60)TTSCACHE[ck]=url}
+    if(curAudio)try{curAudio.pause()}catch(_){}
+    const au=new Audio(url);curAudio=au;let done=false;const fin=()=>{if(done)return;done=true;afterSpeak()};
+    au.onended=au.onerror=fin;setTimeout(fin,4000+text.length*120);await au.play()}
+  catch(e){sayDevice(text)}}
+function say(text){
+  if(!S.voice.on||!text)return;
+  speaking=true;if(rec&&jvOn)try{rec.abort()}catch(_){}
+  if(S.voice.eng==="ai"&&S.okey)sayAI(text);else sayDevice(text)}
 function renderVoice(){
+  $("#vEng").value=S.voice.eng||"ai";$("#vAi").innerHTML=AIVOICES.map(v=>`<option value="${v[0]}" ${v[0]===S.voice.ai?"selected":""}>${v[1]}</option>`).join("");$("#vStyle").value=S.voice.style||"";
+  $("#vAiBox").classList.toggle("hide",$("#vEng").value!=="ai");$("#vDevBox").classList.toggle("hide",$("#vEng").value==="ai");
   $("#vOn").checked=!!S.voice.on;$("#vPitch").value=S.voice.pitch;$("#vRate").value=S.voice.rate;$("#vPv").textContent=S.voice.pitch;$("#vRv").textContent=S.voice.rate;
   const vs=voices(),de=vs.filter(v=>/^de/i.test(v.lang)),list=de.length?de:vs;
   $("#vName").innerHTML=`<option value="">Automatisch (männlich, falls vorhanden)</option>`+list.map(v=>`<option ${v.name===S.voice.name?"selected":""}>${esc(v.name)}</option>`).join("")}
 if(window.speechSynthesis)speechSynthesis.onvoiceschanged=()=>{if(!$("#tab-set").classList.contains("hide"))renderVoice()};
 $("#vOn").onchange=e=>{S.voice.on=e.target.checked;saveS()};
+$("#vEng").onchange=e=>{S.voice.eng=e.target.value;saveS();renderVoice();if(S.voice.eng==="ai"&&!S.okey)msg("Für die natürliche Stimme oben den ChatGPT-Schlüssel eintragen.",1)};
+$("#vAi").onchange=e=>{S.voice.ai=e.target.value;saveS()};
+$("#vStyle").onchange=e=>{S.voice.style=e.target.value;saveS()};
 $("#vName").onchange=e=>{S.voice.name=e.target.value;saveS()};
 $("#vPitch").oninput=e=>{S.voice.pitch=+e.target.value;$("#vPv").textContent=e.target.value;saveS()};
 $("#vRate").oninput=e=>{S.voice.rate=+e.target.value;$("#vRv").textContent=e.target.value;saveS()};
-$("#bVTest").onclick=()=>{const on=S.voice.on;S.voice.on=true;say("Ja, Boss. Alle Systeme sind bereit.");S.voice.on=on};
+$("#bVTest").onclick=()=>{const on=S.voice.on;S.voice.on=true;say("Willkommen zurück, Boss. Alle Systeme sind bereit.");S.voice.on=on};
 
 /* ---------- Jarvis: Spracherkennung ---------- */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let rec=null,jvOn=false,awaitCmd=false,awaitT=null,netErr=0;
+let rec=null,jvOn=false,awaitCmd=false,awaitT=null,netErr=0,greeted=false;
 const WAKE=/(jarvis|javis|jervis|jarwis|jarvi|jarvies|tscharvis|dscharvis|charvis|scharvis|schavis|davis|travis|charlies|charles|dschawis|tschawis)/i;
 function startRec(){if(!jvOn||speaking||!rec)return;try{rec.start()}catch(_){}}
 function jvToggle(){
@@ -625,12 +730,12 @@ function jvToggle(){
   rec.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed"){jvOn=false;jvUI();msg("Mikrofon blockiert. Erlaube das Mikrofon für diese Seite (Schloss-Symbol in der Adresszeile).",1)}
     else if(e.error==="audio-capture")msg("Kein Mikrofon gefunden.",1);else if(e.error==="network"){netErr++;if(netErr>=4)msg("Spracherkennung erreicht Google nicht. Prüfe: Internet an, App „Google“ aktuell, Android-Einstellungen → Spracheingabe von Google an.",1)}};
   rec.onend=()=>{if(jvOn&&!speaking)setTimeout(startRec,netErr?Math.min(800*netErr,4000):250)};
-  jvOn=true;jvUI();go("ideas");if(S.voice.on&&window.speechSynthesis)say("Jarvis online. Ich höre, Boss.");else startRec()}
+  jvOn=true;jvUI();go("ideas");if(S.voice.on){greeted=true;say("Willkommen zurück, Boss. Ich höre.")}else startRec()}
 function jvUI(){$("#jv").classList.toggle("on",jvOn);$("#jv").textContent=jvOn?"🎙️ Jarvis hört":"🎙️ Jarvis"}
 $("#jv").onclick=jvToggle;
 function heard(t){netErr=0;const low=t.toLowerCase(),m=low.match(WAKE);$("#heard").textContent="🎙️ gehört: „"+t+"“";
   if(m){const rest=low.slice(m.index+m[0].length).replace(/^[\s,.!?:]+/,"");
-    if(rest.length<3){awaitCmd=true;clearTimeout(awaitT);awaitT=setTimeout(()=>awaitCmd=false,12000);$("#heard").textContent="🎙️ Jarvis wartet auf deinen Befehl …";say("Ja, Boss?");return}
+    if(rest.length<3){awaitCmd=true;clearTimeout(awaitT);awaitT=setTimeout(()=>awaitCmd=false,12000);$("#heard").textContent="🎙️ Jarvis wartet auf deinen Befehl …";say(greeted?"Ja, Boss?":"Willkommen zurück, Boss.");greeted=true;return}
     return command(rest,t)}
   if(awaitCmd){awaitCmd=false;clearTimeout(awaitT);command(low,t)}}
 const NUMW={eins:1,ein:1,eine:1,einen:1,zwei:2,drei:3,vier:4,"fünf":5,sechs:6,sieben:7,acht:8,neun:9,zehn:10,elf:11,"zwölf":12};
