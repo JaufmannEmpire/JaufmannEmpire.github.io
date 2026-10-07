@@ -157,6 +157,7 @@ a{color:var(--cy)}
       <label>Name</label><input id="stName">
       <label>Anfang jedes Bild-Prompts</label><textarea id="stImg"></textarea>
       <label>Ende jedes Bild-Prompts</label><textarea id="stEnd"></textarea>
+      <label>Negativ-Prompt (wird separat angezeigt, nicht in den Prompt geschrieben)</label><textarea id="stNeg"></textarea>
       <label>Anfang jedes Video-Prompts</label><textarea id="stVid"></textarea>
       <label>Look-Satz am Video-Ende ("Keep … exactly as in the image, ___")</label><input id="stKeep">
       <div class="row" style="margin-top:8px"><button class="btn sm" id="bStSave" type="button">Stil speichern</button><button class="btn sec sm" id="bStNew" type="button">Neuer Stil</button><button class="btn red sm" id="bStDel" type="button">Löschen</button></div>
@@ -203,23 +204,24 @@ const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}
 /* ---------- Daten ---------- */
 const MODELS=[["claude-sonnet-5-5","Sonnet 5.5 · schnell & gut (empfohlen)",2,10],["claude-opus-5-5","Opus 5.5 · beste Qualität, teurer",4,20],["claude-haiku-4-5-20251001","Haiku 4.5 · am günstigsten",1,5]];
 const DEFSTYLES={
- kino:{name:"🎬 Kino-3D (filmisch, hochwertig)",img:"High-end cinematic 3D CGI render, like a frame from a modern animated feature film, vertical 9:16",end:"Cinematic lighting: soft key light on the faces, colored rim lights and glowing light sources inside the scene, light atmospheric haze, rich but balanced color grading, faces clearly lit and easy to read, not too dark. Highly detailed environment with depth, foreground elements and reflections, realistic materials (woven fabric folds, glossy armor, subtle skin texture), shallow depth of field, 35mm lens, sharp focus on the characters, big expressive facial expressions. NOT 2D, NOT anime illustration, NOT cel-shaded, no black outlines, no text, no logos.",vid:"High-end cinematic 3D CGI animation, vertical 9:16, animate this image. Keep the cinematic lighting, atmosphere and materials of the image.",keep:"high-end cinematic 3D, not 2D"},
+ kino:{name:"🎬 Echtes 3D (Kino-Qualität)",img:"Hyper-detailed high-end 3D CGI render, like a frame from a big-budget cinematic 3D movie, Unreal Engine 5 quality, vertical 9:16",end:"Physically based realistic materials: real woven fabric with folds and seams, glossy reflective armor, skin with subtle pores and subsurface scattering, individual hair strands, real three-dimensional volume and depth on every character. Cinematic lighting with soft key light on the faces, colored rim lights and glowing light sources in the scene, light atmospheric haze, ray-traced reflections and soft shadows, balanced bright exposure, faces clearly lit. Detailed environment with depth and foreground elements, shallow depth of field, 35mm lens, sharp focus on the characters, 8K detail. Big expressive facial expressions.",neg:"anime, cartoon, manga, 2D, drawing, illustration, painting, sketch, cel shading, toon shading, flat colors, black outlines, lineart, comic style, chibi, low poly, plastic toy look, blurry, text, watermark, logo",vid:"Hyper-detailed high-end 3D CGI animation with realistic materials and cinematic lighting, vertical 9:16, animate this image. Keep exactly the 3D look, lighting and materials of the image.",keep:"same hyper-detailed 3D CGI look"},
  pixar:{name:"Pixar-3D (Bulma & Chichi)",img:"Pixar-style 3D animation render, vertical 9:16",end:"Soft warm cinematic lighting, shallow depth of field, detailed expressive faces. No anime look, no readable text.",vid:"Pixar-style 3D animation, vertical 9:16, animate this image.",keep:"Pixar-style 3D, not 2D"},
  film3d:{name:"3D-Film (Goku & Vegeta)",img:"3D CGI render like a modern animated movie, vertical 9:16",end:"Fully three-dimensional models with depth, soft shading, real fabric folds, volumetric lighting. Keep hairstyles, faces and outfits exactly as described, only rendered in 3D. NOT 2D, NOT drawn, NOT anime illustration, NOT cel-shaded, no black outlines, no readable text.",vid:"3D animated movie style, vertical 9:16, animate this image.",keep:"3D, not 2D"}
 };
 const DEFCHARS=[
- {id:"bulma",voice:"young adult female voice, bright and sassy",name:"Bulma",look:"short blue hair, red neckerchief, white short-sleeved top, blue jeans, beige boots, brown shoulder bag",persona:"selbstbewusst, frech, eitel, Technik-Genie, schnell beleidigt, liebt Shopping",rules:"",style:"pixar",on:true},
- {id:"chichi",voice:"young adult female voice, sharp and energetic",name:"Chichi",look:"long black hair with straight bangs and a bun tied with a red band, sleeveless purple Chinese-style dress with yellow trim and yellow sash, white pants, purple boots, silver wrist guards",persona:"temperamentvoll, streng, ehrgeizig, Kämpferin, trockener Humor, gibt nie auf",rules:"Chichi never holds a frying pan.",style:"pixar",on:true},
+ {id:"bulma",voice:"young adult female voice, bright and sassy",name:"Bulma",look:"short blue hair, red neckerchief, white short-sleeved top, blue jeans, beige boots, brown shoulder bag",persona:"selbstbewusst, frech, eitel, Technik-Genie, schnell beleidigt, liebt Shopping",rules:"",style:"kino",on:true},
+ {id:"chichi",voice:"young adult female voice, sharp and energetic",name:"Chichi",look:"long black hair with straight bangs and a bun tied with a red band, sleeveless purple Chinese-style dress with yellow trim and yellow sash, white pants, purple boots, silver wrist guards",persona:"temperamentvoll, streng, ehrgeizig, Kämpferin, trockener Humor, gibt nie auf",rules:"Chichi never holds a frying pan.",style:"kino",on:true},
  {id:"goku",voice:"adult male voice, cheerful and friendly",name:"Goku",look:"spiky black hair, orange gi with blue undershirt, dark blue sash, blue wristbands, blue boots",persona:"naiv, fröhlich, immer hungrig, denkt an Essen und Training",rules:"",style:"kino",on:false},
  {id:"vegeta",voice:"adult male voice, deep, proud and irritated",name:"Vegeta",look:"tall spiky upright black hair with widow's peak, blue bodysuit, white Saiyan battle armor with gold trim, white gloves, white boots with gold tips",persona:"stolz, arrogant, schnell genervt, nennt Goku 'Kakarott', 'der Prinz aller Saiyajins'",rules:"",style:"kino",on:false}
 ];
 const LANGEN={Deutsch:"German",Englisch:"English",Türkisch:"Turkish",Spanisch:"Spanish"};
-let S=Object.assign({key:"",model:MODELS[0][0],ai:"Grok",lang:"Deutsch",nImg:3,rules:"",style:"pixar",spent:0,
+let S=Object.assign({key:"",model:MODELS[0][0],ai:"Grok",lang:"Deutsch",nImg:3,rules:"",style:"kino",spent:0,
   styles:JSON.parse(JSON.stringify(DEFSTYLES)),chars:JSON.parse(JSON.stringify(DEFCHARS)),
   voice:{on:true,name:"",pitch:0.8,rate:0.95,eng:"ai",ai:"onyx",style:"Sprich fließend und natürlich auf Deutsch mit warmer, tiefer, ruhiger Männerstimme, wie ein eleganter, souveräner KI-Butler: höflich, selbstsicher, leicht trocken-humorvoll. Kein Roboterklang, natürliche Betonung und Pausen."},
   prov:"claude",check:true,plen:"kurz",okey:"",omodel:"gpt-6.1-sol",
   humor:"FREEZER: „Dose steht drei Millimeter schief … direkt Punktabzug. Was ist das hier für ein Saftladen?!“\nGOKU: „Freezer … du sollst hier testen und nicht den Laden erobern!“\nFREEZER: „Goku, ich habe Planeten strenger bewertet als diesen Aldi.“\nVEGETA: „Ich bin der Prinz aller Saiyajins … und ich kenne diesen Mann nicht.“\nBÄCKER: „Gnädige Frau … das ist eine Bäckerei.“\nBULMA: „Danke, danke! Ich wollte eigentlich nur Nudeln kaufen.“"},LS.get("je2_s",{}));
 S.voice=Object.assign({on:true,name:"",pitch:0.8,rate:0.95,eng:"ai",ai:"onyx",style:"Sprich fließend und natürlich auf Deutsch mit warmer, tiefer, ruhiger Männerstimme, wie ein eleganter, souveräner KI-Butler: höflich, selbstsicher, leicht trocken-humorvoll. Kein Roboterklang, natürliche Betonung und Pausen."},S.voice||{});
+if((S.styleV||0)<2){S.styles.kino=JSON.parse(JSON.stringify(DEFSTYLES.kino));S.chars.forEach(c=>c.style="kino");S.style="kino";S.styleV=2;LS.set("je2_s",S)}
 if(!S.styles.kino){S.styles.kino=JSON.parse(JSON.stringify(DEFSTYLES.kino));S.chars.forEach(c=>{if(c.style==="film3d")c.style="kino"});if(S.style==="film3d")S.style="kino";LS.set("je2_s",S)}
 let TASKS=LS.get("je2_t",[]);
 let IDEAS=LS.get("je2_i",[]);
@@ -265,7 +267,7 @@ function SYS(t){
 FIGUREN (Aussehen in JEDEM Bild-Prompt wörtlich in Klammern nach dem Namen verwenden; Charakter für die Dialoge nutzen):
 ${cs.map(c=>`- ${c.name}: AUSSEHEN: ${c.look} | CHARAKTER: ${c.persona}${c.voice?` | STIMME: ${c.voice}`:""}${c.rules?` | FESTE REGEL: ${c.rules}`:""}`).join("\n")||"- (keine Figuren gewählt, erfinde passende)"}
 
-BILD-STIL: Jeder Bild-Prompt beginnt mit "${st.img}." und endet mit "${st.end}"
+BILD-STIL: Jeder Bild-Prompt beginnt WÖRTLICH mit "${st.img}." und endet WÖRTLICH mit "${st.end}"
 VIDEO-KI: ${S.ai}. Prompt-Texte auf Englisch, Dialoge auf ${L}.
 FESTE ZUSATZREGELN DES NUTZERS (haben Vorrang): ${S.rules||"keine"}
 
@@ -280,7 +282,8 @@ BILD-PROMPT-REGELN
 - Jede sichtbare Figur mit Name, komplettem Aussehen in Klammern, Position (left/right/center/foreground/background), Haltung und Mimik. Mimik übertrieben und lustig.
 - Nur Dinge ins Bild, die zur Geschichte gehören. Keine zufälligen Requisiten.
 - Eindeutig formulieren: Menschen, die etwas nachahmen, klar so beschreiben (z.B. "humans imitating penguins, no real penguins, no animals").
-- Niemals Formulierungen wie "original character design" oder "like in the anime" (führt zu 2D-Zeichenstil).
+- VERBOTENE WÖRTER in Bild-Prompts, auch nicht verneint: anime, cartoon, manga, 2D, drawn, drawing, illustration, cel-shaded, toon, stylized, Pixar, Disney, comic, chibi, "original character design", "like in the anime", "Dragon Ball". Bild-KIs ignorieren Verneinungen oft ("no anime" erzeugt gerade Anime!). Beschreibe den Look nur POSITIV: hyper-detailed 3D CGI, realistic materials, real fabric, skin pores, hair strands, cinematic lighting.
+- Jede Figur wird ausdrücklich als "hyper-detailed 3D CGI character" beschrieben, mit echten Materialien (Stoff, Haut, Haare, Rüstung). Keine riesigen Kulleraugen, keine Cartoon-Proportionen: realistische Körperproportionen, aber ausdrucksstarke, lustige Mimik.
 - Bildgestaltung wie ein Kinofilm: Lichtquellen in der Szene (Neon, Lampen, Schaufenster, Sonnenuntergang, Leuchteffekte), Tiefe mit Vordergrund-Elementen, passende Atmosphäre (leichter Dunst, Spiegelungen, Wetter oder Partikel, wenn es zur Szene passt), interessante Kamera (leicht von unten, Weitwinkel mit Tiefe). Trotzdem hell genug, und die Gesichter sind groß und klar beleuchtet, damit die lustige Mimik gut sichtbar ist.
 - Filter-sicher: keine Tränen, kein Weinen, kein Blut, keine Küsse, keine knappe Kleidung. Stattdessen Schweißtropfen und Grimassen.
 - Zeilenumbrüche (\\n) nach jedem Satz oder spätestens alle 60 Zeichen, damit der Prompt untereinander steht.
@@ -344,6 +347,9 @@ async function apiOpenAI(prompt,{t=null,images=[],max=12000}={}){
   const m=j.choices&&j.choices[0]&&j.choices[0].message;
   return pj((m&&m.content)||"");
 }
+const BANNED=/\b(anime|cartoon(?:ish)?|manga|2d|cel[- ]?shad(?:ed|ing)|toon(?:[- ]shad(?:ed|ing))?|illustration|drawn|drawing|comic(?:[- ]style)?|chibi|pixar(?:[- ]style)?|disney)\b/i;
+function cleanPrompt(p){if(!p)return p;
+  return String(p).split("\n").map(line=>line.split(/(?<=[.,;])\s+/).filter(part=>!BANNED.test(part)).join(" ")).filter((l,i,a)=>l.trim()||(a[i-1]||"").trim()).join("\n").replace(/[ \t]+\n/g,"\n").trim()}
 const taskCtx=t=>`AUFGABE: ${t.title}\nWer stellt die Wette: ${t.giver} → wer muss sie machen: ${t.doer}\nHandlung: ${t.summary}\nFiguren: ${t.cast.join(", ")}`;
 
 /* ---------- Video-Prompt zusammenbauen ---------- */
@@ -515,6 +521,7 @@ function renderDetail(){
   </div>
 
   <h3>🖼️ Bild-Prompts</h3>
+  ${st.neg?`<details class="card"><summary class="tt">🚫 Negativ-Prompt (falls deine Bild-KI ein Feld dafür hat)</summary><pre class="p">${esc(st.neg)}</pre><button class="btn sm" id="bCopyNeg" type="button">📋 Kopieren</button><p class="mut">In das Feld „Negative prompt“ bzw. „Was nicht im Bild sein soll“ einfügen, nicht in den normalen Prompt.</p></details>`:""}
   <div class="row"><select id="dN" style="flex:0 0 90px">${[3,4,5,6,7].map(n=>`<option ${n==(t.images.length||S.nImg)?"selected":""}>${n}</option>`).join("")}</select>
   <button class="btn" id="bImgs" type="button">${t.images.length?"🔄 Neu erstellen":"🖼️ Bild-Prompts erstellen"}</button></div>
   ${t.images.length?`<button class="btn sec sm" id="bCopyImgs" type="button" style="margin-top:8px">📋 Alle Bild-Prompts kopieren</button>`:""}
@@ -552,6 +559,7 @@ function bindDetail(t){
   $("#bBack").onclick=()=>go("tasks");
   $("#bDelTask").onclick=()=>{if(confirm("Diese Aufgabe wirklich löschen?")){TASKS=TASKS.filter(x=>x.id!==t.id);delete FULL[t.id];saveT();go("tasks")}};
   $("#bImgs").onclick=()=>genImages(t,+$("#dN").value);
+  const cn=$("#bCopyNeg");if(cn)cn.onclick=()=>copy(styleOf(t).neg);
   const ci=$("#bCopyImgs");if(ci)ci.onclick=()=>copy(t.images.map(x=>`${x.title}\n${x.prompt}`).join("\n\n"));
   const cv=$("#bCopyVids");if(cv)cv.onclick=()=>copy(t.videos.map(v=>`${v.title}\n${vtext(v,t)}`).join("\n\n"));
   $("#bUp").onclick=()=>{$("#fImgs").dataset.t=t.id;$("#fImgs").click()};
@@ -583,7 +591,7 @@ AUFTRAG: Schreibe genau ${n} Bild-Prompts für diese Aufgabe nach allen Bild-Reg
 AUSGABE JSON: {"images":[{"title":"Bild 1: Die Wette (Halbtotale)","prompt":""}]}`,{t,max:9000});
     let ims=r.images||[];
     if(S.check&&ims.length){tick(`🔍 Doppel-Check mit ${checker()==="openai"?"ChatGPT":"Claude"}`);ims=await reviewImages(t,ims)}
-    t.images=ims;saveT();renderDetail();
+    t.images=ims.map(x=>({title:x.title,prompt:cleanPrompt(x.prompt)}));saveT();renderDetail();
   },`Die Bild-Prompts sind fertig, Boss.`)}
 async function genVideos(t,withImgs){
   let imgs=[];
@@ -649,7 +657,7 @@ async function doEdit(t,k,ins,lock){
       Object.assign(t,{title:r.title||t.title,giver:r.giver||t.giver,doer:r.doer||t.doer,summary:r.summary||t.summary});
     }else if(k[0]==="i"){const i=+k.slice(1);
       const r=await api(`${taskCtx(t)}\n\nAKTUELLER BILD-PROMPT (${t.images[i].title}):\n${t.images[i].prompt}\n\nÄNDERUNGSWUNSCH: ${ins}\nÄndere NUR genau das, was im Änderungswunsch steht. Alles andere bleibt Wort für Wort gleich (nichts umformulieren, nichts hinzufügen, nichts weglassen).\nAUSGABE JSON: {"title":"","prompt":""}`,{t,max:3000});
-      t.images[i]={title:r.title||t.images[i].title,prompt:r.prompt||t.images[i].prompt};
+      t.images[i]={title:r.title||t.images[i].title,prompt:cleanPrompt(r.prompt||t.images[i].prompt)};
     }else{const i=+k.slice(1),v=t.videos[i];
       const vcur=v.override?{title:v.title,fullPromptManuallyEdited:v.override}:v;
       const r=await api(`${taskCtx(t)}\n\nAKTUELLER VIDEO-PROMPT (JSON):\n${JSON.stringify(vcur)}\n\nÄNDERUNGSWUNSCH: ${ins}\nÄndere NUR genau das, was im Änderungswunsch steht. Alles andere bleibt Wort für Wort gleich (nichts umformulieren, nichts hinzufügen, nichts weglassen). Bild-Nummer bleibt gleich.${lock?" DIALOG IST GESPERRT: Sprecher, Reihenfolge und jeder gesprochene Text (text) bleiben exakt gleich, auch beim Kürzen.":" Der Dialog darf geändert werden."}\nAUSGABE JSON: {"video":{"image":${v.image||"null"},"title":"Clip 1: …","premise":"","scene":"","characters":[{"name":"","position":"","look":"","voice":""}],"stay":"","beats":[{"action":"","speaker":"","mode":"says","how":"","face":"","text":""}],"audio":""}}`,{t,max:4000});
@@ -691,9 +699,9 @@ $("#bSaveOKey").onclick=()=>{S.okey=$("#okey").value.trim();saveS();msg(S.okey?"
 $("#bTestOKey").onclick=async()=>{S.okey=$("#okey").value.trim();saveS();await run("Teste ChatGPT",async()=>{const r=await api('Antworte nur mit JSON: {"ok":true}',{max:200,via:"openai"});if(!r.ok)throw new Error("Unerwartete Antwort")},"ChatGPT ist verbunden, Boss.")};
 ["ai","lang","rules","humor"].forEach(id=>$("#"+id).onchange=e=>{S[id]=e.target.value;saveS()});
 $("#nImg").onchange=e=>{S.nImg=+e.target.value;saveS()};
-function fillStyle(){const s=S.styles[$("#stEdit").value];if(!s)return;$("#stName").value=s.name;$("#stImg").value=s.img;$("#stEnd").value=s.end;$("#stVid").value=s.vid;$("#stKeep").value=s.keep}
+function fillStyle(){const s=S.styles[$("#stEdit").value];if(!s)return;$("#stName").value=s.name;$("#stImg").value=s.img;$("#stEnd").value=s.end;$("#stVid").value=s.vid;$("#stNeg").value=s.neg||"";$("#stKeep").value=s.keep}
 $("#stEdit").onchange=fillStyle;
-$("#bStSave").onclick=()=>{const k=$("#stEdit").value;S.styles[k]={name:$("#stName").value||"Stil",img:$("#stImg").value,end:$("#stEnd").value,vid:$("#stVid").value,keep:$("#stKeep").value};saveS();renderStyleSel();renderSet();msg("Stil gespeichert.",2)};
+$("#bStSave").onclick=()=>{const k=$("#stEdit").value;S.styles[k]={name:$("#stName").value||"Stil",img:$("#stImg").value,end:$("#stEnd").value,vid:$("#stVid").value,keep:$("#stKeep").value,neg:$("#stNeg").value};saveS();renderStyleSel();renderSet();msg("Stil gespeichert.",2)};
 $("#bStNew").onclick=()=>{const k="st"+uid();S.styles[k]={name:"Neuer Stil",img:"3D animation render, vertical 9:16",end:"No readable text.",vid:"3D animation, vertical 9:16, animate this image.",keep:"3D, not 2D"};saveS();renderSet();$("#stEdit").value=k;fillStyle();renderStyleSel()};
 $("#bStDel").onclick=()=>{const k=$("#stEdit").value;if(Object.keys(S.styles).length<2)return msg("Mindestens ein Stil muss bleiben.",1);if(!confirm("Stil löschen?"))return;delete S.styles[k];if(S.style===k)S.style=Object.keys(S.styles)[0];saveS();renderSet();renderStyleSel()};
 function renderChars(){
