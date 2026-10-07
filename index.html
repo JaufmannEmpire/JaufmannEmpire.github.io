@@ -201,14 +201,15 @@ const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}
 /* ---------- Daten ---------- */
 const MODELS=[["claude-sonnet-5-5","Sonnet 5.5 · schnell & gut (empfohlen)",2,10],["claude-opus-5-5","Opus 5.5 · beste Qualität, teurer",4,20],["claude-haiku-4-5-20251001","Haiku 4.5 · am günstigsten",1,5]];
 const DEFSTYLES={
+ kino:{name:"🎬 Kino-3D (filmisch, hochwertig)",img:"High-end cinematic 3D CGI render, like a frame from a modern animated feature film, vertical 9:16",end:"Cinematic lighting: soft key light on the faces, colored rim lights and glowing light sources inside the scene, light atmospheric haze, rich but balanced color grading, faces clearly lit and easy to read, not too dark. Highly detailed environment with depth, foreground elements and reflections, realistic materials (woven fabric folds, glossy armor, subtle skin texture), shallow depth of field, 35mm lens, sharp focus on the characters, big expressive facial expressions. NOT 2D, NOT anime illustration, NOT cel-shaded, no black outlines, no text, no logos.",vid:"High-end cinematic 3D CGI animation, vertical 9:16, animate this image. Keep the cinematic lighting, atmosphere and materials of the image.",keep:"high-end cinematic 3D, not 2D"},
  pixar:{name:"Pixar-3D (Bulma & Chichi)",img:"Pixar-style 3D animation render, vertical 9:16",end:"Soft warm cinematic lighting, shallow depth of field, detailed expressive faces. No anime look, no readable text.",vid:"Pixar-style 3D animation, vertical 9:16, animate this image.",keep:"Pixar-style 3D, not 2D"},
  film3d:{name:"3D-Film (Goku & Vegeta)",img:"3D CGI render like a modern animated movie, vertical 9:16",end:"Fully three-dimensional models with depth, soft shading, real fabric folds, volumetric lighting. Keep hairstyles, faces and outfits exactly as described, only rendered in 3D. NOT 2D, NOT drawn, NOT anime illustration, NOT cel-shaded, no black outlines, no readable text.",vid:"3D animated movie style, vertical 9:16, animate this image.",keep:"3D, not 2D"}
 };
 const DEFCHARS=[
  {id:"bulma",voice:"young adult female voice, bright and sassy",name:"Bulma",look:"short blue hair, red neckerchief, white short-sleeved top, blue jeans, beige boots, brown shoulder bag",persona:"selbstbewusst, frech, eitel, Technik-Genie, schnell beleidigt, liebt Shopping",rules:"",style:"pixar",on:true},
  {id:"chichi",voice:"young adult female voice, sharp and energetic",name:"Chichi",look:"long black hair with straight bangs and a bun tied with a red band, sleeveless purple Chinese-style dress with yellow trim and yellow sash, white pants, purple boots, silver wrist guards",persona:"temperamentvoll, streng, ehrgeizig, Kämpferin, trockener Humor, gibt nie auf",rules:"Chichi never holds a frying pan.",style:"pixar",on:true},
- {id:"goku",voice:"adult male voice, cheerful and friendly",name:"Goku",look:"spiky black hair, orange gi with blue undershirt, dark blue sash, blue wristbands, blue boots",persona:"naiv, fröhlich, immer hungrig, denkt an Essen und Training",rules:"",style:"film3d",on:false},
- {id:"vegeta",voice:"adult male voice, deep, proud and irritated",name:"Vegeta",look:"tall spiky upright black hair with widow's peak, blue bodysuit, white Saiyan battle armor with gold trim, white gloves, white boots with gold tips",persona:"stolz, arrogant, schnell genervt, nennt Goku 'Kakarott', 'der Prinz aller Saiyajins'",rules:"",style:"film3d",on:false}
+ {id:"goku",voice:"adult male voice, cheerful and friendly",name:"Goku",look:"spiky black hair, orange gi with blue undershirt, dark blue sash, blue wristbands, blue boots",persona:"naiv, fröhlich, immer hungrig, denkt an Essen und Training",rules:"",style:"kino",on:false},
+ {id:"vegeta",voice:"adult male voice, deep, proud and irritated",name:"Vegeta",look:"tall spiky upright black hair with widow's peak, blue bodysuit, white Saiyan battle armor with gold trim, white gloves, white boots with gold tips",persona:"stolz, arrogant, schnell genervt, nennt Goku 'Kakarott', 'der Prinz aller Saiyajins'",rules:"",style:"kino",on:false}
 ];
 const LANGEN={Deutsch:"German",Englisch:"English",Türkisch:"Turkish",Spanisch:"Spanish"};
 let S=Object.assign({key:"",model:MODELS[0][0],ai:"Grok",lang:"Deutsch",nImg:3,rules:"",style:"pixar",spent:0,
@@ -217,6 +218,7 @@ let S=Object.assign({key:"",model:MODELS[0][0],ai:"Grok",lang:"Deutsch",nImg:3,r
   prov:"claude",check:true,okey:"",omodel:"gpt-6.1-sol",
   humor:"FREEZER: „Dose steht drei Millimeter schief … direkt Punktabzug. Was ist das hier für ein Saftladen?!“\nGOKU: „Freezer … du sollst hier testen und nicht den Laden erobern!“\nFREEZER: „Goku, ich habe Planeten strenger bewertet als diesen Aldi.“\nVEGETA: „Ich bin der Prinz aller Saiyajins … und ich kenne diesen Mann nicht.“\nBÄCKER: „Gnädige Frau … das ist eine Bäckerei.“\nBULMA: „Danke, danke! Ich wollte eigentlich nur Nudeln kaufen.“"},LS.get("je2_s",{}));
 S.voice=Object.assign({on:true,name:"",pitch:0.8,rate:0.95,eng:"ai",ai:"onyx",style:"Sprich fließend und natürlich auf Deutsch mit warmer, tiefer, ruhiger Männerstimme, wie ein eleganter, souveräner KI-Butler: höflich, selbstsicher, leicht trocken-humorvoll. Kein Roboterklang, natürliche Betonung und Pausen."},S.voice||{});
+if(!S.styles.kino){S.styles.kino=JSON.parse(JSON.stringify(DEFSTYLES.kino));S.chars.forEach(c=>{if(c.style==="film3d")c.style="kino"});if(S.style==="film3d")S.style="kino";LS.set("je2_s",S)}
 let TASKS=LS.get("je2_t",[]);
 let IDEAS=LS.get("je2_i",[]);
 const FULL={}; // hochgeladene Bilder in voller Größe (nur im Speicher)
@@ -277,6 +279,7 @@ BILD-PROMPT-REGELN
 - Nur Dinge ins Bild, die zur Geschichte gehören. Keine zufälligen Requisiten.
 - Eindeutig formulieren: Menschen, die etwas nachahmen, klar so beschreiben (z.B. "humans imitating penguins, no real penguins, no animals").
 - Niemals Formulierungen wie "original character design" oder "like in the anime" (führt zu 2D-Zeichenstil).
+- Bildgestaltung wie ein Kinofilm: Lichtquellen in der Szene (Neon, Lampen, Schaufenster, Sonnenuntergang, Leuchteffekte), Tiefe mit Vordergrund-Elementen, passende Atmosphäre (leichter Dunst, Spiegelungen, Wetter oder Partikel, wenn es zur Szene passt), interessante Kamera (leicht von unten, Weitwinkel mit Tiefe). Trotzdem hell genug, und die Gesichter sind groß und klar beleuchtet, damit die lustige Mimik gut sichtbar ist.
 - Filter-sicher: keine Tränen, kein Weinen, kein Blut, keine Küsse, keine knappe Kleidung. Stattdessen Schweißtropfen und Grimassen.
 - Zeilenumbrüche (\\n) nach jedem Satz oder spätestens alle 60 Zeichen, damit der Prompt untereinander steht.
 
