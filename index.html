@@ -85,8 +85,8 @@ a{color:var(--cy)}
     <div class="chips" id="cast"></div>
     <label>Stil</label>
     <select id="styleSel"></select>
-    <label>Wunsch, Thema oder Fan-Kommentar (darf leer sein)</label>
-    <textarea id="req" placeholder="z.B. Mutproben im Supermarkt … oder einfach einen Fan-Kommentar hier einfügen"></textarea>
+    <label>💬 Deine Anweisungen an die KI: Thema, Ort, Fan-Kommentar, was besser sein soll … (darf leer sein)</label>
+    <textarea id="req" placeholder="z.B. draußen am Strand, Freezer soll sich richtig blamieren, nicht immer Supermarkt … oder einen Fan-Kommentar einfügen"></textarea>
     <div class="row" style="margin-top:10px">
       <select id="nIdeas" style="flex:0 0 96px"><option>3</option><option selected>5</option><option>8</option><option>10</option><option>12</option></select>
       <button class="btn" id="bIdeas" type="button">💡 Ideen erstellen</button>
@@ -255,7 +255,7 @@ function errText(e){
   if(s===529||s===503||m.includes("overloaded"))return "Claude ist gerade überlastet. Nochmal tippen.";
   if(s===400)return `${who} hat die Anfrage abgelehnt: `+(e.message||"");
   if(e instanceof TypeError)return "Keine Verbindung. Internet prüfen und nochmal tippen.";
-  if(e instanceof SyntaxError)return "Antwort unvollständig (zu lang?). Nochmal tippen oder weniger Bilder wählen.";
+  if(e instanceof SyntaxError)return "Die KI-Antwort war unvollständig, auch nach einem zweiten Versuch. Bitte nochmal tippen.";
   return "Fehler: "+(e.message||e);
 }
 
@@ -271,13 +271,17 @@ BILD-STIL: Jeder Bild-Prompt beginnt WÖRTLICH mit "${st.img}." und endet WÖRTL
 VIDEO-KI: ${S.ai}. Prompt-Texte auf Englisch, Dialoge auf ${L}.
 FESTE ZUSATZREGELN DES NUTZERS (haben Vorrang): ${S.rules||"keine"}
 
-AUFGABEN-REGELN
+AUFGABEN-REGELN (Ziel: maximales VIRAL-Potenzial auf TikTok)
 - Abwechselnd: mal stellt die eine Figur der anderen die Wette, mal umgekehrt.
-- Jede Aufgabe ist sehr witzig, passt zum Charakter der Figuren und hat eine klare Pointe bzw. ein überraschendes Ende.
+- Jede Aufgabe ist verrückt, lustig und herrlich dumm, passt perfekt zum Charakter (z.B. der stolze Herrscher muss etwas total Peinliches tun) und hat eine klare Pointe bzw. ein überraschendes Ende.
+- Orte: ALLES ist möglich und soll abwechseln, nicht immer drinnen oder im Supermarkt. Z.B. Strand, Freibad, Fitnessstudio, Zoo, Flughafen, Hochzeit, Fußballstadion, Bauernhof, Kirmes, Autowaschanlage, Wald, Berg, Schulbus, Restaurant, Fahrschule, Talentshow, Tierarzt, Zahnarzt, Dönerladen, Hochhausdach …
+- Viral-Formel: sofort verständliche Situation in der ersten Sekunde (Hook), Alltags-Situation, die jeder kennt, dazu absurde Steigerung und ein unerwartetes Ende, das man teilen will.
 - Harmlos: keine Gewalt, keine Waffen, nichts Verletzendes oder Peinlich-Sexuelles.
 
 BILD-PROMPT-REGELN
-- Jedes Bild ist ein neuer Moment: Bild 1 zeigt die Wette (Ort, Requisite, beide Figuren), dann Steigerung, letztes Bild = Pointe.
+- Jedes Bild ist ein komplett NEUER Moment mit eigener verrückter Aktion, eigener Kameraeinstellung und wenn passend eigenem Ort. NIEMALS zwei ähnliche Bilder (nicht dieselbe Pose, nicht dieselbe Anordnung, nicht nur leicht andere Mimik). Jede Szene ist für sich schon lustig, absurd und dumm, und es wird von Bild zu Bild verrückter.
+- Bild 1 zeigt die Wette (wer stellt sie wem, Ort, Requisite). Danach steht die Figur, die die Aufgabe machen MUSS, im Mittelpunkt. Die Figur, die die Wette gestellt hat, ist NUR dann im Bild, wenn es für den Gag wirklich nötig ist (z.B. am Anfang und bei der Pointe). Sonst lieber Passanten, Tiere, Mitarbeiter oder andere Nebenfiguren, die lustig reagieren.
+- Letztes Bild = größte Pointe bzw. überraschendes Ende.
 - Abwechslungsreiche Perspektiven, mindestens eine Nahaufnahme; dazu z.B. Froschperspektive, Vogelperspektive, Over-the-Shoulder, Weitwinkel, Dutch Angle. Die Perspektive steht im Titel.
 - Jede sichtbare Figur mit Name, komplettem Aussehen in Klammern, Position (left/right/center/foreground/background), Haltung und Mimik. Mimik übertrieben und lustig.
 - Nur Dinge ins Bild, die zur Geschichte gehören. Keine zufälligen Requisiten.
@@ -319,7 +323,10 @@ function needKey(which){const k=which==="openai"?S.okey:S.key;if(!k){msg(which==
 const writer=()=>S.prov==="openai"||S.prov==="mix2"?"openai":"claude";
 const checker=()=>S.prov==="mix"?"openai":S.prov==="mix2"?"claude":writer();
 function pj(txt){const a=txt.indexOf("{"),b=txt.lastIndexOf("}");if(a<0||b<a)throw new SyntaxError("no json");return JSON.parse(txt.slice(a,b+1))}
-async function api(prompt,{t=null,images=[],max=12000,via=null}={}){
+async function api(prompt,opt={}){
+  try{return await api1(prompt,opt)}
+  catch(e){if(e instanceof SyntaxError&&!(ctl&&ctl.signal.aborted)){return await api1(prompt,Object.assign({},opt,{max:Math.round((opt.max||12000)*1.6)}))}throw e}}
+async function api1(prompt,{t=null,images=[],max=12000,via=null}={}){
   const who=via||writer();
   if(who==="openai")return apiOpenAI(prompt,{t,images,max});
   const key=needKey("claude");
@@ -328,10 +335,15 @@ async function api(prompt,{t=null,images=[],max=12000,via=null}={}){
   content.push({type:"text",text:prompt});
   const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",signal:ctl&&ctl.signal,
     headers:{"x-api-key":key,"anthropic-version":"2023-06-01","content-type":"application/json","anthropic-dangerous-direct-browser-access":"true"},
-    body:JSON.stringify({model:S.model,max_tokens:max,system:SYS(t),messages:[{role:"user",content}]})});
+    body:JSON.stringify({model:S.model,max_tokens:max,system:SYS(t),messages:[{role:"user",content}],
+      tools:[{name:"antwort",description:"Gib das Ergebnis exakt im verlangten JSON-Schema zurück.",input_schema:{type:"object",additionalProperties:true}}],
+      tool_choice:{type:"tool",name:"antwort"}})});
   let j={};try{j=await r.json()}catch(_){}
   if(!r.ok){const e=new Error((j.error&&j.error.message)||("HTTP "+r.status));e.status=r.status;e.who="Claude";throw e}
   if(j.usage){const[pi,po]=PRICE(S.model);S.spent+=(j.usage.input_tokens*pi+j.usage.output_tokens*po)/1e6;saveS();renderSpent()}
+  if(j.stop_reason==="max_tokens")throw new SyntaxError("cut");
+  const tu=(j.content||[]).find(b=>b.type==="tool_use");
+  if(tu&&tu.input&&typeof tu.input==="object"&&Object.keys(tu.input).length)return tu.input;
   return pj((j.content||[]).filter(b=>b.type==="text").map(b=>b.text).join(""));
 }
 async function apiOpenAI(prompt,{t=null,images=[],max=12000}={}){
@@ -344,7 +356,8 @@ async function apiOpenAI(prompt,{t=null,images=[],max=12000}={}){
     body:JSON.stringify({model:S.omodel,max_completion_tokens:max,response_format:{type:"json_object"},messages:[{role:"system",content:SYS(t)},{role:"user",content}]})});
   let j={};try{j=await r.json()}catch(_){}
   if(!r.ok){const e=new Error((j.error&&j.error.message)||("HTTP "+r.status));e.status=r.status;e.who="ChatGPT";e.code=j.error&&j.error.code;throw e}
-  const m=j.choices&&j.choices[0]&&j.choices[0].message;
+  const ch0=j.choices&&j.choices[0];if(ch0&&ch0.finish_reason==="length")throw new SyntaxError("cut");
+  const m=ch0&&ch0.message;
   return pj((m&&m.content)||"");
 }
 const BANNED=/\b(anime|cartoon(?:ish)?|manga|2d|cel[- ]?shad(?:ed|ing)|toon(?:[- ]shad(?:ed|ing))?|illustration|drawn|drawing|comic(?:[- ]style)?|chibi|pixar(?:[- ]style)?|disney)\b/i;
@@ -475,7 +488,7 @@ async function genIdeas(n){
     const ask=(cnt,avoid)=>api(`AUFTRAG: Erfinde GENAU ${cnt} sehr witzige, unterschiedliche Aufgaben-Ideen für die Figuren ${cs.map(c=>c.name).join(", ")}. Nicht mehr und nicht weniger als ${cnt}.
 Wunsch / Thema / Fan-Kommentar des Nutzers: ${req?`"${req}"`:"keiner, überrasche mit den lustigsten Ideen"}
 Enthält der Text einen Fan-Kommentar mit mehreren Wünschen, mache aus jedem Wunsch eine Aufgabe. Sind es weniger Wünsche als ${cnt}, erfinde passende weitere Ideen im gleichen Stil dazu, bis es genau ${cnt} sind.${avoid.length?`\nDiese Ideen gibt es schon, mache andere: ${avoid.join("; ")}`:""}
-AUSGABE JSON: {"ideas":[{"title":"","giver":"","doer":"","summary":"2-3 Sätze Handlung inklusive Pointe"}]}`,{max:Math.max(4000,cnt*450)});
+AUSGABE JSON: {"ideas":[{"title":"","giver":"","doer":"","summary":"2-3 Sätze Handlung inklusive Pointe"}]}`,{max:Math.max(6000,cnt*900)});
     let list=((await ask(n,[])).ideas||[]);
     for(let tries=0;list.length<n&&tries<2;tries++){const more=(await ask(n-list.length,list.map(x=>x.title))).ideas||[];if(!more.length)break;list=list.concat(more)}
     IDEAS=list.slice(0,n).map(d=>Object.assign(d,{cast:cs.map(c=>c.name),style:S.style}));saveI();renderIdeas();
@@ -522,6 +535,7 @@ function renderDetail(){
 
   <h3>🖼️ Bild-Prompts</h3>
   ${st.neg?`<details class="card"><summary class="tt">🚫 Negativ-Prompt (falls deine Bild-KI ein Feld dafür hat)</summary><pre class="p">${esc(st.neg)}</pre><button class="btn sm" id="bCopyNeg" type="button">📋 Kopieren</button><p class="mut">In das Feld „Negative prompt“ bzw. „Was nicht im Bild sein soll“ einfügen, nicht in den normalen Prompt.</p></details>`:""}
+  <textarea id="imgWish" placeholder="💬 Optional: Was soll bei den Bildern anders/besser sein? z.B. mehr Chaos, Bild 3 am Strand, Goku nur am Anfang …" style="min-height:58px;margin-bottom:8px">${esc(t.imgWish||"")}</textarea>
   <div class="row"><select id="dN" style="flex:0 0 90px">${[3,4,5,6,7].map(n=>`<option ${n==(t.images.length||S.nImg)?"selected":""}>${n}</option>`).join("")}</select>
   <button class="btn" id="bImgs" type="button">${t.images.length?"🔄 Neu erstellen":"🖼️ Bild-Prompts erstellen"}</button></div>
   ${t.images.length?`<button class="btn sec sm" id="bCopyImgs" type="button" style="margin-top:8px">📋 Alle Bild-Prompts kopieren</button>`:""}
@@ -532,6 +546,7 @@ function renderDetail(){
   <h3>📸 Fertige Bilder → 🎬 Video-Prompts</h3>
   <p class="mut">Lade deine generierten Bilder hoch. Die Reihenfolge ist egal, Claude sortiert sie nach der Geschichte und schreibt zu jedem Bild den passenden Video-Prompt.</p>
   <div class="thumbs">${t.thumbs.map((s,i)=>`<div class="th"><img src="${s}" alt="Bild ${i+1}"><button class="x" data-rm="${i}" type="button">✕</button></div>`).join("")}</div>
+  <textarea id="vidWish" placeholder="💬 Optional: Was soll bei den Video-Prompts anders/besser sein? z.B. Freezer soll schreien, mehr Dialog von Goku …" style="min-height:58px;margin-top:8px">${esc(t.vidWish||"")}</textarea>
   <div class="row" style="margin-top:8px"><button class="btn sec" id="bUp" type="button">📸 Bilder hochladen</button>
   <button class="btn cy" id="bVidImg" type="button" ${t.thumbs.length?"":"disabled"}>🎬 Aus Bildern</button></div>
   <button class="btn sec sm" id="bVidTxt" type="button" style="margin-top:8px" ${t.images.length?"":"disabled"}>🎬 Ohne Bilder, aus den Bild-Prompts</button>
@@ -558,13 +573,15 @@ function copy(text){const done=()=>msg("Kopiert ✓",2);
 function bindDetail(t){
   $("#bBack").onclick=()=>go("tasks");
   $("#bDelTask").onclick=()=>{if(confirm("Diese Aufgabe wirklich löschen?")){TASKS=TASKS.filter(x=>x.id!==t.id);delete FULL[t.id];saveT();go("tasks")}};
-  $("#bImgs").onclick=()=>genImages(t,+$("#dN").value);
+  $("#imgWish").onchange=e=>{t.imgWish=e.target.value;saveT()};
+  $("#vidWish").onchange=e=>{t.vidWish=e.target.value;saveT()};
+  $("#bImgs").onclick=()=>{t.imgWish=$("#imgWish").value;saveT();genImages(t,+$("#dN").value)};
   const cn=$("#bCopyNeg");if(cn)cn.onclick=()=>copy(styleOf(t).neg);
   const ci=$("#bCopyImgs");if(ci)ci.onclick=()=>copy(t.images.map(x=>`${x.title}\n${x.prompt}`).join("\n\n"));
   const cv=$("#bCopyVids");if(cv)cv.onclick=()=>copy(t.videos.map(v=>`${v.title}\n${vtext(v,t)}`).join("\n\n"));
   $("#bUp").onclick=()=>{$("#fImgs").dataset.t=t.id;$("#fImgs").click()};
-  $("#bVidImg").onclick=()=>genVideos(t,true);
-  $("#bVidTxt").onclick=()=>genVideos(t,false);
+  $("#bVidImg").onclick=()=>{t.vidWish=$("#vidWish").value;saveT();genVideos(t,true)};
+  $("#bVidTxt").onclick=()=>{t.vidWish=$("#vidWish").value;saveT();genVideos(t,false)};
   $("#bCap").onclick=()=>genCaptions(t);
   $$("[data-rm]").forEach(b=>b.onclick=()=>{const i=+b.dataset.rm;t.thumbs.splice(i,1);if(FULL[t.id])FULL[t.id].splice(i,1);saveT();renderDetail()});
   $$("[data-copy]").forEach(b=>b.onclick=()=>{const k=b.dataset.copy,i=+k.slice(1);
@@ -587,7 +604,9 @@ async function genImages(t,n){
   await run(`Schreibe ${n} Bild-Prompts`,async()=>{
     const r=await api(`${taskCtx(t)}
 
-AUFTRAG: Schreibe genau ${n} Bild-Prompts für diese Aufgabe nach allen Bild-Regeln. Mindestens eine Nahaufnahme, abwechslungsreiche Perspektiven, sehr lustige Mimik.
+AUFTRAG: Schreibe genau ${n} Bild-Prompts für diese Aufgabe nach allen Bild-Regeln.
+Plane zuerst still die ${n} Story-Momente: Jeder Moment zeigt eine NEUE, verrückt-lustige Situation mit eigener Aktion, eigener Kamera und wenn passend eigenem Ort. Kein Bild darf dem vorherigen ähneln. Die Situationen werden von Bild zu Bild absurder, das letzte Bild ist die größte Pointe.${t.imgWish?`
+ANWEISUNG DES NUTZERS FÜR DIESE BILDER (hat Vorrang vor allem anderen): ${t.imgWish}`:""}
 AUSGABE JSON: {"images":[{"title":"Bild 1: Die Wette (Halbtotale)","prompt":""}]}`,{t,max:9000});
     let ims=r.images||[];
     if(S.check&&ims.length){tick(`🔍 Doppel-Check mit ${checker()==="openai"?"ChatGPT":"Claude"}`);ims=await reviewImages(t,ims)}
@@ -606,7 +625,8 @@ ${t.images.map((x,i)=>`Bild ${i+1}: ${x.prompt}`).join("\n\n")}`;
     const r=await api(`${taskCtx(t)}
 
 ${base}
-Die Clips erzählen zusammen eine durchgehende, sehr witzige Geschichte. Kommt ein Lied vor, geht der Liedtext über die Clips weiter.
+Die Clips erzählen zusammen eine durchgehende, sehr witzige Geschichte. Kommt ein Lied vor, geht der Liedtext über die Clips weiter.${t.vidWish?`
+ANWEISUNG DES NUTZERS FÜR DIESE VIDEO-PROMPTS (hat Vorrang vor allem anderen): ${t.vidWish}`:""}
 AUSGABE JSON: {"videos":[{"image":1,"title":"Clip 1: …","premise":"","scene":"","characters":[{"name":"","position":"","look":"","voice":""}],"stay":"","beats":[{"action":"","speaker":"","mode":"says","how":"","face":"","text":""}],"audio":""}],"notes":""}
 "image" ist die Nummer des Bildes (Bild 1, Bild 2 …), die Liste ist in Story-Reihenfolge.`,{t,images:imgs,max:14000});
     let vids=r.videos||[];
