@@ -140,6 +140,8 @@ a{color:var(--cy)}
         <div><label>Video-KI</label><select id="ai"><option>Grok</option><option>Veo</option><option>Kling</option><option>Andere</option></select></div>
         <div><label>Dialogsprache</label><select id="lang"><option>Deutsch</option><option>Englisch</option><option>Türkisch</option><option>Spanisch</option></select></div>
       </div>
+      <label>Länge der Video-Prompts</label>
+      <select id="plen"><option value="kurz">Kurz &amp; knackig (empfohlen für Grok)</option><option value="normal">Ausführlich</option></select>
       <label>Bilder pro Aufgabe</label><select id="nImg"><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select>
       <label>Deine festen Zusatzregeln (gelten für alles)</label>
       <textarea id="rules" placeholder="z.B. Keine Musik in Videos. Immer eine Nahaufnahme."></textarea>
@@ -215,7 +217,7 @@ const LANGEN={Deutsch:"German",Englisch:"English",Türkisch:"Turkish",Spanisch:"
 let S=Object.assign({key:"",model:MODELS[0][0],ai:"Grok",lang:"Deutsch",nImg:3,rules:"",style:"pixar",spent:0,
   styles:JSON.parse(JSON.stringify(DEFSTYLES)),chars:JSON.parse(JSON.stringify(DEFCHARS)),
   voice:{on:true,name:"",pitch:0.8,rate:0.95,eng:"ai",ai:"onyx",style:"Sprich fließend und natürlich auf Deutsch mit warmer, tiefer, ruhiger Männerstimme, wie ein eleganter, souveräner KI-Butler: höflich, selbstsicher, leicht trocken-humorvoll. Kein Roboterklang, natürliche Betonung und Pausen."},
-  prov:"claude",check:true,okey:"",omodel:"gpt-6.1-sol",
+  prov:"claude",check:true,plen:"kurz",okey:"",omodel:"gpt-6.1-sol",
   humor:"FREEZER: „Dose steht drei Millimeter schief … direkt Punktabzug. Was ist das hier für ein Saftladen?!“\nGOKU: „Freezer … du sollst hier testen und nicht den Laden erobern!“\nFREEZER: „Goku, ich habe Planeten strenger bewertet als diesen Aldi.“\nVEGETA: „Ich bin der Prinz aller Saiyajins … und ich kenne diesen Mann nicht.“\nBÄCKER: „Gnädige Frau … das ist eine Bäckerei.“\nBULMA: „Danke, danke! Ich wollte eigentlich nur Nudeln kaufen.“"},LS.get("je2_s",{}));
 S.voice=Object.assign({on:true,name:"",pitch:0.8,rate:0.95,eng:"ai",ai:"onyx",style:"Sprich fließend und natürlich auf Deutsch mit warmer, tiefer, ruhiger Männerstimme, wie ein eleganter, souveräner KI-Butler: höflich, selbstsicher, leicht trocken-humorvoll. Kein Roboterklang, natürliche Betonung und Pausen."},S.voice||{});
 if(!S.styles.kino){S.styles.kino=JSON.parse(JSON.stringify(DEFSTYLES.kino));S.chars.forEach(c=>{if(c.style==="film3d")c.style="kino"});if(S.style==="film3d")S.style="kino";LS.set("je2_s",S)}
@@ -292,6 +294,7 @@ VIDEO-PROMPT-REGELN (die App baut aus deinen Feldern den fertigen Prompt)
 - "beats": das Drehbuch in fester Reihenfolge. Jeder Beat hat "action" (1 kurzer englischer Satz, höchstens 1-2 einfache, gut sichtbare Bewegungen) und optional eine Sprechzeile: "speaker", "mode" (says | whispers | shouts | mutters | sings), "how" (WIE es gesagt wird, Englisch: Emotion + Tonfall + Tempo + Lautstärke, z.B. "outraged, voice cracking, fast and loud" oder "deadpan, slow, dangerously calm"), "face" (Mimik und Körpersprache beim Sprechen, Englisch, z.B. "eyes narrowed, one eyebrow twitching, lips pressed together"), "text" (Satz auf ${L}).
 - EMOTIONEN: Jede Sprechzeile bekommt eine Emotion, die exakt zum Inhalt, zum Charakter und zur Situation passt, und die Emotionen steigern sich über den Clip (z.B. genervt → empört → eiskalte Pointe). Der Satzinhalt und die Emotion müssen zusammenpassen: ein Konter klingt trocken oder triumphierend, eine Panik klingt hektisch, ein Flüstern ist leise. Typisch 4-6 Beats: Aktion → Zeile → Reaktion → Zeile → Reaktion → Pointe. Das Video ist nur 6-10 Sekunden lang, also KEINE langen Aktionsketten.
 - Dialogtext NORMAL geschrieben, niemals gezogene Buchstaben wie "Freeeund". Lange Töne beim Singen in "how" beschreiben. Gesang: mode "sings", eigener erfundener Liedtext, kurz, reimt sich.
+- LÄNGE: ${S.plen==="normal"?"ausführlich erlaubt.":"KURZ halten! premise und scene je höchstens 12 Wörter, jede action höchstens 12 Wörter, how und face je 2-5 Wörter, look höchstens 6 Wörter, audio höchstens 10 Wörter."}
 - "audio": Geräusche konkret. Standard: keine Musik, kein Lachen, keine Hintergrundstimmen, nur leise Umgebungsgeräusche. Musik nur, wenn die Szene sie braucht (Karaoke, Tanz) oder der Nutzer es will.
 
 HUMOR-REGELN FÜR DIALOGE (der wichtigste Teil!)
@@ -375,7 +378,31 @@ function vtext(v,t){
   return L.filter((x,i,a)=>!(x===""&&(i===0||a[i-1]===""))).join("\n");
 }
 
+function vtextShort(v,t){
+  const st=styleOf(t),lang=LANGEN[S.lang]||"German",L=[],ch=v.characters||[],bs=v.beats||[];
+  const names=ch.map(c=>up(c.name)),spk=bs.filter(b=>b.speaker&&b.text);
+  const sing=spk.some(b=>b.mode==="sings");
+  L.push(st.vid+(names.length?` Keep ${names.join(" and ")} exactly as in the image, ${st.keep}.`:""));
+  L.push([v.premise,v.scene].filter(Boolean).join(" "));
+  if(ch.length)L.push(ch.map(c=>`${up(c.name)}: ${c.position||""}`).join(". ")+"."+(v.stay?" "+v.stay:""));
+  L.push("");
+  bs.forEach(b=>{
+    if(b.action)L.push(b.action);
+    if(b.speaker&&b.text){const sp=up(b.speaker),c=ch.find(x=>up(x.name)===sp);
+      const how=[b.how,b.face].filter(Boolean).join(", ");
+      L.push(`ONLY ${sp}${c&&c.position&&names.length>1?" ("+c.position.split(",")[0]+")":""} ${b.mode==="sings"?"sings with a real singing voice":(b.mode&&b.mode!=="says"?b.mode:"says")}${how?", "+how:""}: „${b.text}“`)}
+  });
+  L.push("");
+  if(spk.length>1)L.push(`Speaker order: ${spk.map(b=>up(b.speaker)).join(" → ")}. Only the speaker moves the mouth, all others keep it closed.`);
+  else if(spk.length&&names.length>1)L.push("Only the speaker moves the mouth, all others keep it closed.");
+  if(spk.length)L.push(`${lang}, native pronunciation, accurate lip sync${sing?", music video":""}.`);
+  L.push([v.audio?"Audio: "+v.audio.replace(/\.$/,""):"","No subtitles, no extra characters."].filter(Boolean).join(". "));
+  const rules=castChars(t).filter(c=>c.rules&&names.includes(up(c.name))).map(c=>c.rules);
+  if(rules.length)L.push(rules.join(" "));
+  return L.filter((x,i,a)=>x!==undefined&&!(x===""&&(i===0||a[i-1]===""))).join("\n");
+}
 function vtextBeats(v,t){
+  if((S.plen||"kurz")==="kurz")return vtextShort(v,t);
   const st=styleOf(t),lang=LANGEN[S.lang]||"German",L=[],ch=v.characters||[],bs=v.beats||[];
   const names=ch.map(c=>up(c.name)),spk=bs.filter(b=>b.speaker&&b.text);
   L.push(st.vid);
@@ -462,7 +489,14 @@ function renderTasks(){
 let OPEN={}; // offene Bearbeitungsboxen
 const IMGCHIPS=["Nahaufnahme","andere Perspektive","lustiger","mehr 3D, nicht 2D","Figuren genauer"];
 const VIDCHIPS=["bessere Gags","kürzer","lustiger","ohne Musik & Lachen","deutlicher sprechen","echt singen","nur 1 Sprecher","mehr Bewegung"];
-function editBox(key,chips){return OPEN[key]?`<div class="edit"><div class="chips">${chips.map(c=>`<button type="button" class="chip" data-chip="${key}">${esc(c)}</button>`).join("")}</div>
+const DIALOG_CHIPS=["bessere Gags","lustiger","nur 1 Sprecher","echt singen"];
+function lockDialog(oldV,newV){
+  const olds=(oldV.beats||[]).filter(b=>b.speaker&&b.text);if(!olds.length||!newV.beats)return newV;
+  let k=0;newV.beats.forEach(b=>{if(b.speaker&&b.text){if(k<olds.length){b.speaker=olds[k].speaker;b.text=olds[k].text;b.mode=olds[k].mode}k++}});
+  newV.beats=newV.beats.filter(b=>!(b.speaker&&b.text)||newV.beats.filter(x=>x.speaker&&x.text).indexOf(b)<olds.length);
+  for(;k<olds.length;k++)newV.beats.push(Object.assign({},olds[k]));
+  return newV}
+function editBox(key,chips){return OPEN[key]?`<div class="edit">${key[0]==="v"?`<label class="row" style="color:var(--tx);margin:0 0 8px;flex-wrap:nowrap"><input type="checkbox" data-lock="${key}" checked style="width:22px;height:22px;flex:none"> 🔒 Dialog behalten (nur ändern, wenn ich es sage)</label>`:""}<div class="chips">${chips.map(c=>`<button type="button" class="chip" data-chip="${key}">${esc(c)}</button>`).join("")}</div>
   <textarea data-ins="${key}" placeholder="Was soll anders sein? z.B. Chichi soll links stehen, Dialog lustiger …" style="margin-top:8px"></textarea>
   <div class="row" style="margin-top:6px"><button class="btn sm" data-doedit="${key}" type="button">✨ Ändern</button><button class="btn sec sm" data-close="${key}" type="button">Schließen</button></div></div>`:""}
 function manBox(key,text){return OPEN["m"+key]?`<div class="edit"><textarea data-man="${key}" style="min-height:220px">${esc(text)}</textarea>
@@ -500,7 +534,9 @@ function renderDetail(){
     <div class="tt">${esc(v.title||"Clip "+(i+1))}${v.override?'<span class="badge">selbst bearbeitet</span>':""}</div>
     <div class="lines">${vlines(v).map(l=>`<div class="ln"><span class="who ${l.mode==="sings"?"sing":""}">${esc(up(l.speaker))}${l.mode==="sings"?" 🎵":""}</span><span>${esc(l.text)}</span></div>`).join("")||'<span class="mut">ohne Dialog</span>'}</div></div></div>
     <details><summary class="mut">Ganzen Prompt anzeigen</summary><pre class="p">${esc(vtext(v,t))}</pre></details>
-    <div class="tools" style="margin-top:6px"><button class="btn sm" data-copy="v${i}" type="button">📋 Kopieren</button><button class="btn sec sm" data-edit="v${i}" type="button">✏️ Ändern lassen</button><button class="btn sec sm" data-open-man="v${i}" type="button">📝 Selbst bearbeiten</button>${v.override?`<button class="btn sec sm" data-reset="${i}" type="button">↩️ Original</button>`:""}</div>
+    <div class="tools" style="margin-top:6px"><button class="btn sm" data-copy="v${i}" type="button">📋 Kopieren</button><button class="btn sec sm" data-edit="v${i}" type="button">✏️ Ändern lassen</button>${v.beats?`<button class="btn sec sm" data-dlg="${i}" type="button">💬 Dialog ändern</button>`:""}<button class="btn sec sm" data-open-man="v${i}" type="button">📝 Selbst bearbeiten</button>${v.override?`<button class="btn sec sm" data-reset="${i}" type="button">↩️ Original</button>`:""}</div>
+    ${OPEN["d"+i]&&v.beats?`<div class="edit">${v.beats.map((b,j)=>b.speaker&&b.text?`<label>${esc(up(b.speaker))} (${esc(b.how||"")})</label><textarea data-dl="${i}" data-j="${j}" style="min-height:54px">${esc(b.text)}</textarea>`:"").join("")}
+      <div class="row" style="margin-top:6px"><button class="btn sm" data-dlsave="${i}" type="button">💾 Dialog speichern</button><button class="btn sec sm" data-close="d${i}" type="button">Abbrechen</button></div></div>`:""}
     ${editBox("v"+i,VIDCHIPS)}${manBox("v"+i,vtext(v,t))}</div>`}).join("")}
 
   <h3>📝 Video-Beschreibung</h3>
@@ -528,10 +564,13 @@ function bindDetail(t){
   $$("[data-edit]").forEach(b=>b.onclick=()=>{const k=b.dataset.edit;OPEN[k]=!OPEN[k];renderDetail()});
   $$("[data-open-man]").forEach(b=>b.onclick=()=>{const k="m"+b.dataset.openMan;OPEN[k]=!OPEN[k];renderDetail()});
   $$("[data-close]").forEach(b=>b.onclick=()=>{OPEN[b.dataset.close]=false;renderDetail()});
-  $$("[data-chip]").forEach(b=>b.onclick=()=>{const ta=$(`[data-ins="${b.dataset.chip}"]`);ta.value=(ta.value?ta.value+", ":"")+b.textContent});
-  $$("[data-doedit]").forEach(b=>b.onclick=()=>{const k=b.dataset.doedit,ins=$(`[data-ins="${k}"]`).value.trim();if(!ins)return msg("Schreib kurz, was anders sein soll.",1);doEdit(t,k,ins)});
+  $$("[data-chip]").forEach(b=>b.onclick=()=>{const ta=$(`[data-ins="${b.dataset.chip}"]`);ta.value=(ta.value?ta.value+", ":"")+b.textContent;
+    const lk=$(`[data-lock="${b.dataset.chip}"]`);if(lk&&DIALOG_CHIPS.includes(b.textContent))lk.checked=false});
+  $$("[data-doedit]").forEach(b=>b.onclick=()=>{const k=b.dataset.doedit,ins=$(`[data-ins="${k}"]`).value.trim();if(!ins)return msg("Schreib kurz, was anders sein soll.",1);const lk=$(`[data-lock="${k}"]`);doEdit(t,k,ins,lk?lk.checked:false)});
   $$("[data-mansave]").forEach(b=>b.onclick=()=>{const k=b.dataset.mansave,i=+k.slice(1),val=$(`[data-man="${k}"]`).value;
     if(k[0]==="i")t.images[i].prompt=val;else t.videos[i].override=val;OPEN["m"+k]=false;saveT();renderDetail();msg("Gespeichert.",2)});
+  $$("[data-dlg]").forEach(b=>b.onclick=()=>{const k="d"+b.dataset.dlg;OPEN[k]=!OPEN[k];renderDetail()});
+  $$("[data-dlsave]").forEach(b=>b.onclick=()=>{const i=+b.dataset.dlsave,v=t.videos[i];$$(`[data-dl="${i}"]`).forEach(ta=>{const x=v.beats[+ta.dataset.j];if(x)x.text=ta.value.trim()});delete v.override;OPEN["d"+i]=false;saveT();renderDetail();msg("Dialog gespeichert.",2)});
   $$("[data-reset]").forEach(b=>b.onclick=()=>{delete t.videos[+b.dataset.reset].override;saveT();renderDetail()});
 }
 
@@ -603,18 +642,18 @@ AUFTRAG: Schreibe 3 kurze, coole, lustige TikTok-Beschreibungen auf ${S.lang} mi
 AUSGABE JSON: {"captions":[{"label":"Zur Aufgabe","text":""}]}`,{t,max:2000});
     t.captions=r.captions||[];saveT();renderDetail();
   },"Die Beschreibungen sind fertig, Boss.")}
-async function doEdit(t,k,ins){
+async function doEdit(t,k,ins,lock){
   await run("Ändere",async()=>{
     if(k==="task"){
       const r=await api(`${taskCtx(t)}\n\nÄNDERUNGSWUNSCH: ${ins}\nSchreibe die Aufgabe mit dieser Änderung neu.\nAUSGABE JSON: {"title":"","giver":"","doer":"","summary":""}`,{t,max:2000});
       Object.assign(t,{title:r.title||t.title,giver:r.giver||t.giver,doer:r.doer||t.doer,summary:r.summary||t.summary});
     }else if(k[0]==="i"){const i=+k.slice(1);
-      const r=await api(`${taskCtx(t)}\n\nAKTUELLER BILD-PROMPT (${t.images[i].title}):\n${t.images[i].prompt}\n\nÄNDERUNGSWUNSCH: ${ins}\nSchreibe den kompletten Bild-Prompt mit dieser Änderung neu. Alles andere bleibt gleich.\nAUSGABE JSON: {"title":"","prompt":""}`,{t,max:3000});
+      const r=await api(`${taskCtx(t)}\n\nAKTUELLER BILD-PROMPT (${t.images[i].title}):\n${t.images[i].prompt}\n\nÄNDERUNGSWUNSCH: ${ins}\nÄndere NUR genau das, was im Änderungswunsch steht. Alles andere bleibt Wort für Wort gleich (nichts umformulieren, nichts hinzufügen, nichts weglassen).\nAUSGABE JSON: {"title":"","prompt":""}`,{t,max:3000});
       t.images[i]={title:r.title||t.images[i].title,prompt:r.prompt||t.images[i].prompt};
     }else{const i=+k.slice(1),v=t.videos[i];
       const vcur=v.override?{title:v.title,fullPromptManuallyEdited:v.override}:v;
-      const r=await api(`${taskCtx(t)}\n\nAKTUELLER VIDEO-PROMPT (JSON):\n${JSON.stringify(vcur)}\n\nÄNDERUNGSWUNSCH: ${ins}\nSchreibe den Clip mit dieser Änderung neu. Alles andere bleibt gleich, Bild-Nummer bleibt gleich.\nAUSGABE JSON: {"video":{"image":${v.image||"null"},"title":"Clip 1: …","premise":"","scene":"","characters":[{"name":"","position":"","look":"","voice":""}],"stay":"","beats":[{"action":"","speaker":"","mode":"says","how":"","face":"","text":""}],"audio":""}}`,{t,max:4000});
-      if(r.video){t.videos[i]=Object.assign({image:v.image},r.video);delete t.videos[i].override}
+      const r=await api(`${taskCtx(t)}\n\nAKTUELLER VIDEO-PROMPT (JSON):\n${JSON.stringify(vcur)}\n\nÄNDERUNGSWUNSCH: ${ins}\nÄndere NUR genau das, was im Änderungswunsch steht. Alles andere bleibt Wort für Wort gleich (nichts umformulieren, nichts hinzufügen, nichts weglassen). Bild-Nummer bleibt gleich.${lock?" DIALOG IST GESPERRT: Sprecher, Reihenfolge und jeder gesprochene Text (text) bleiben exakt gleich, auch beim Kürzen.":" Der Dialog darf geändert werden."}\nAUSGABE JSON: {"video":{"image":${v.image||"null"},"title":"Clip 1: …","premise":"","scene":"","characters":[{"name":"","position":"","look":"","voice":""}],"stay":"","beats":[{"action":"","speaker":"","mode":"says","how":"","face":"","text":""}],"audio":""}}`,{t,max:4000});
+      if(r.video){let nv=Object.assign({image:v.image},r.video);if(lock&&!v.override)nv=lockDialog(v,nv);t.videos[i]=nv;delete t.videos[i].override}
     }
     OPEN[k]=false;saveT();renderDetail();
   },"Erledigt, Boss.")}
@@ -635,6 +674,7 @@ function renderSet(){
   $("#key").value=S.key;$("#model").innerHTML=MODELS.map(m=>`<option value="${m[0]}" ${m[0]===S.model?"selected":""}>${m[1]}</option>`).join("");
   $("#prov").value=S.prov;$("#chk").checked=!!S.check;$("#okey").value=S.okey||"";
   $("#omodel").innerHTML=OMODELS.map(m=>`<option value="${m[0]}" ${m[0]===S.omodel?"selected":""}>${m[1]}</option>`).join("");
+  $("#plen").value=S.plen||"kurz";
   $("#ai").value=S.ai;$("#lang").value=S.lang;$("#nImg").value=S.nImg;$("#rules").value=S.rules;$("#humor").value=S.humor||"";renderSpent();
   $("#stEdit").innerHTML=Object.entries(S.styles).map(([k,v])=>`<option value="${k}">${esc(v.name)}</option>`).join("");$("#stEdit").value=S.style in S.styles?S.style:Object.keys(S.styles)[0];fillStyle();
   renderChars();renderVoice()}
@@ -644,6 +684,7 @@ $("#bTestKey").onclick=async()=>{S.key=$("#key").value.trim();saveS();await run(
 $("#model").onchange=e=>{S.model=e.target.value;saveS()};
 $("#prov").onchange=e=>{S.prov=e.target.value;saveS();const need=S.prov!=="claude"&&!S.okey;msg(need?"Trag unten noch deinen ChatGPT-Schlüssel ein.":"Gespeichert.",need?1:2)};
 $("#chk").onchange=e=>{S.check=e.target.checked;saveS()};
+$("#plen").onchange=e=>{S.plen=e.target.value;saveS()};
 $("#omodel").onchange=e=>{S.omodel=e.target.value;saveS()};
 $("#bShowOKey").onclick=()=>{const k=$("#okey");k.type=k.type==="password"?"text":"password"};
 $("#bSaveOKey").onclick=()=>{S.okey=$("#okey").value.trim();saveS();msg(S.okey?"ChatGPT-Schlüssel gespeichert (nur auf diesem Gerät).":"ChatGPT-Schlüssel entfernt.",2)};
