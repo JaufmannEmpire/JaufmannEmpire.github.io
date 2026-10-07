@@ -88,7 +88,7 @@ a{color:var(--cy)}
     <label>Wunsch, Thema oder Fan-Kommentar (darf leer sein)</label>
     <textarea id="req" placeholder="z.B. Mutproben im Supermarkt … oder einfach einen Fan-Kommentar hier einfügen"></textarea>
     <div class="row" style="margin-top:10px">
-      <select id="nIdeas" style="flex:0 0 96px"><option>3</option><option selected>5</option><option>10</option></select>
+      <select id="nIdeas" style="flex:0 0 96px"><option>3</option><option selected>5</option><option>8</option><option>10</option><option>12</option></select>
       <button class="btn" id="bIdeas" type="button">💡 Ideen erstellen</button>
     </div>
     <div id="ideas"></div>
@@ -128,6 +128,11 @@ a{color:var(--cy)}
       <label>Bilder pro Aufgabe</label><select id="nImg"><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select>
       <label>Deine festen Zusatzregeln (gelten für alles)</label>
       <textarea id="rules" placeholder="z.B. Keine Musik in Videos. Immer eine Nahaufnahme."></textarea>
+    </div>
+    <div class="card">
+      <div class="tt">😂 Humor-Vorbilder</div>
+      <p class="mut">Dialoge, die du richtig lustig findest. Claude schreibt neue Dialoge in genau diesem Stil. Eine Zeile pro Beispiel, gern mit Namen davor.</p>
+      <textarea id="humor" style="min-height:150px"></textarea>
     </div>
     <div class="card">
       <div class="tt">🎨 Stile</div>
@@ -181,15 +186,16 @@ const DEFSTYLES={
  film3d:{name:"3D-Film (Goku & Vegeta)",img:"3D CGI render like a modern animated movie, vertical 9:16",end:"Fully three-dimensional models with depth, soft shading, real fabric folds, volumetric lighting. Keep hairstyles, faces and outfits exactly as described, only rendered in 3D. NOT 2D, NOT drawn, NOT anime illustration, NOT cel-shaded, no black outlines, no readable text.",vid:"3D animated movie style, vertical 9:16, animate this image.",keep:"3D, not 2D"}
 };
 const DEFCHARS=[
- {id:"bulma",name:"Bulma",look:"short blue hair, red neckerchief, white short-sleeved top, blue jeans, beige boots, brown shoulder bag",persona:"selbstbewusst, frech, eitel, Technik-Genie, schnell beleidigt, liebt Shopping",rules:"",style:"pixar",on:true},
- {id:"chichi",name:"Chichi",look:"long black hair with straight bangs and a bun tied with a red band, sleeveless purple Chinese-style dress with yellow trim and yellow sash, white pants, purple boots, silver wrist guards",persona:"temperamentvoll, streng, ehrgeizig, Kämpferin, trockener Humor, gibt nie auf",rules:"Chichi never holds a frying pan.",style:"pixar",on:true},
- {id:"goku",name:"Goku",look:"spiky black hair, orange gi with blue undershirt, dark blue sash, blue wristbands, blue boots",persona:"naiv, fröhlich, immer hungrig, denkt an Essen und Training",rules:"",style:"film3d",on:false},
- {id:"vegeta",name:"Vegeta",look:"tall spiky upright black hair with widow's peak, blue bodysuit, white Saiyan battle armor with gold trim, white gloves, white boots with gold tips",persona:"stolz, arrogant, schnell genervt, nennt Goku 'Kakarott', 'der Prinz aller Saiyajins'",rules:"",style:"film3d",on:false}
+ {id:"bulma",voice:"young adult female voice, bright and sassy",name:"Bulma",look:"short blue hair, red neckerchief, white short-sleeved top, blue jeans, beige boots, brown shoulder bag",persona:"selbstbewusst, frech, eitel, Technik-Genie, schnell beleidigt, liebt Shopping",rules:"",style:"pixar",on:true},
+ {id:"chichi",voice:"young adult female voice, sharp and energetic",name:"Chichi",look:"long black hair with straight bangs and a bun tied with a red band, sleeveless purple Chinese-style dress with yellow trim and yellow sash, white pants, purple boots, silver wrist guards",persona:"temperamentvoll, streng, ehrgeizig, Kämpferin, trockener Humor, gibt nie auf",rules:"Chichi never holds a frying pan.",style:"pixar",on:true},
+ {id:"goku",voice:"adult male voice, cheerful and friendly",name:"Goku",look:"spiky black hair, orange gi with blue undershirt, dark blue sash, blue wristbands, blue boots",persona:"naiv, fröhlich, immer hungrig, denkt an Essen und Training",rules:"",style:"film3d",on:false},
+ {id:"vegeta",voice:"adult male voice, deep, proud and irritated",name:"Vegeta",look:"tall spiky upright black hair with widow's peak, blue bodysuit, white Saiyan battle armor with gold trim, white gloves, white boots with gold tips",persona:"stolz, arrogant, schnell genervt, nennt Goku 'Kakarott', 'der Prinz aller Saiyajins'",rules:"",style:"film3d",on:false}
 ];
 const LANGEN={Deutsch:"German",Englisch:"English",Türkisch:"Turkish",Spanisch:"Spanish"};
 let S=Object.assign({key:"",model:MODELS[0][0],ai:"Grok",lang:"Deutsch",nImg:3,rules:"",style:"pixar",spent:0,
   styles:JSON.parse(JSON.stringify(DEFSTYLES)),chars:JSON.parse(JSON.stringify(DEFCHARS)),
-  voice:{on:true,name:"",pitch:0.8,rate:0.95}},LS.get("je2_s",{}));
+  voice:{on:true,name:"",pitch:0.8,rate:0.95},
+  humor:"FREEZER: „Dose steht drei Millimeter schief … direkt Punktabzug. Was ist das hier für ein Saftladen?!“\nGOKU: „Freezer … du sollst hier testen und nicht den Laden erobern!“\nFREEZER: „Goku, ich habe Planeten strenger bewertet als diesen Aldi.“\nVEGETA: „Ich bin der Prinz aller Saiyajins … und ich kenne diesen Mann nicht.“\nBÄCKER: „Gnädige Frau … das ist eine Bäckerei.“\nBULMA: „Danke, danke! Ich wollte eigentlich nur Nudeln kaufen.“"},LS.get("je2_s",{}));
 let TASKS=LS.get("je2_t",[]);
 let IDEAS=LS.get("je2_i",[]);
 const FULL={}; // hochgeladene Bilder in voller Größe (nur im Speicher)
@@ -230,7 +236,7 @@ function SYS(t){
   return `Du bist der Chefautor und Prompt-Regisseur von "JaufmannEmpire" für die TikTok-Serie "Wetten, du traust dich nicht": Figuren stellen sich gegenseitig lustige Mutproben. Du schreibst Aufgaben-Ideen, Bild-Prompts und Video-Prompts in absoluter Top-Qualität.
 
 FIGUREN (Aussehen in JEDEM Bild-Prompt wörtlich in Klammern nach dem Namen verwenden; Charakter für die Dialoge nutzen):
-${cs.map(c=>`- ${c.name}: AUSSEHEN: ${c.look} | CHARAKTER: ${c.persona}${c.rules?` | FESTE REGEL: ${c.rules}`:""}`).join("\n")||"- (keine Figuren gewählt, erfinde passende)"}
+${cs.map(c=>`- ${c.name}: AUSSEHEN: ${c.look} | CHARAKTER: ${c.persona}${c.voice?` | STIMME: ${c.voice}`:""}${c.rules?` | FESTE REGEL: ${c.rules}`:""}`).join("\n")||"- (keine Figuren gewählt, erfinde passende)"}
 
 BILD-STIL: Jeder Bild-Prompt beginnt mit "${st.img}." und endet mit "${st.end}"
 VIDEO-KI: ${S.ai}. Prompt-Texte auf Englisch, Dialoge auf ${L}.
@@ -253,16 +259,24 @@ BILD-PROMPT-REGELN
 
 VIDEO-PROMPT-REGELN (die App baut aus deinen Feldern den fertigen Prompt)
 - KEINE Zeitangaben, keine Sekunden.
-- "scene": Ort und Kamerabewegung, 1-2 englische Sätze.
-- "characters": jede sichtbare Figur, die wichtig ist oder spricht: "name", "position" (z.B. "on the left, sitting at the table"), "look" (kurz: Haare, Kleidung, was sie in der Hand hält).
-- "action": genaue, flüssige Bewegungsbeschreibung auf Englisch, Schritt für Schritt, damit die Handlung perfekt aussieht und logisch aus dem Startbild folgt. Körperhaltungen konkret beschreiben (Beispiel Pinguin-Gang: legs stiff and close together, tiny steps, feet turned outward, body rocking left and right, arms stiff at the sides, hands flapping like flippers). Wenn mehrere Personen etwas tun sollen: "EVERY person … at the same time".
-- "lines": 1 bis 3 Dialogzeilen in fester Reihenfolge, pro Zeile genau EIN Sprecher. Nur Figuren, die im Bild sichtbar sind, sprechen. "speaker" (Name), "position" (wo im Bild), "mode" (says | whispers | shouts | mutters | sings), "how" (Tonfall auf Englisch), "text" (kurzer, sehr witziger Satz auf ${L}, im Charakter der Figur).
-- Dialogtext NORMAL geschrieben, niemals gezogene Buchstaben wie "Freeeund" oder "Briiiötchen". Lange Töne beim Singen stattdessen in "how" beschreiben (z.B. "long held note on the last word Teddybär"). Bei Wörtern, die englisch ausgesprochen werden könnten, Ausspracheregel in "how" ergänzen.
-- Kurze Sätze, damit nicht langsam oder gehetzt gesprochen wird. Lieber 2 starke Zeilen als 4 schwache. Die letzte Zeile ist die Pointe.
-- Gesang: mode "sings", Liedtext eigen erfunden (keine echten Lieder zitieren), klar und einfach, reimt sich.
-- "audio": Geräusche konkret benennen. Standard: keine Musik, kein Lachen, keine Hintergrundstimmen. Musik nur, wenn die Szene sie braucht (Karaoke, Tanz) oder der Nutzer es will.
-- Bei Grok: kompakt halten.
-- PRÜFSCHRITT vor der Ausgabe: richtige Sprecher, nur sichtbare Figuren sprechen, Aussehen und Positionen passen zum Bild, Handlung logisch. Still korrigieren.
+- "premise": EIN englischer Satz, der die komische Situation des Clips klar macht, passend zur Aufgabe (Beispiel: "Frieza is taking his job as a supermarket mystery shopper ridiculously seriously.").
+- "scene": Ort, Licht und Kamerabewegung, 1-2 englische Sätze.
+- "characters": JEDE im Bild sichtbare Hauptfigur (auch wenn sie nur im Hintergrund steht): "name", "position" (z.B. "behind Frieza in the background, on the left"), "look" (kurz: Haare, Kleidung, was sie hält), "voice" (z.B. "adult male voice, cheerful").
+- "stay": englische Regel, wer an seiner Position bleibt (z.B. "Goku stays behind Frieza in the background the whole time and does not move into the foreground.").
+- "beats": das Drehbuch in fester Reihenfolge. Jeder Beat hat "action" (1 kurzer englischer Satz, höchstens 1-2 einfache, gut sichtbare Bewegungen) und optional eine Sprechzeile: "speaker", "mode" (says | whispers | shouts | mutters | sings), "how" (Tonfall auf Englisch), "text" (Satz auf ${L}). Typisch 4-6 Beats: Aktion → Zeile → Reaktion → Zeile → Reaktion → Pointe. Das Video ist nur 6-10 Sekunden lang, also KEINE langen Aktionsketten.
+- Dialogtext NORMAL geschrieben, niemals gezogene Buchstaben wie "Freeeund". Lange Töne beim Singen in "how" beschreiben. Gesang: mode "sings", eigener erfundener Liedtext, kurz, reimt sich.
+- "audio": Geräusche konkret. Standard: keine Musik, kein Lachen, keine Hintergrundstimmen, nur leise Umgebungsgeräusche. Musik nur, wenn die Szene sie braucht (Karaoke, Tanz) oder der Nutzer es will.
+
+HUMOR-REGELN FÜR DIALOGE (der wichtigste Teil!)
+- Alle sichtbaren Hauptfiguren spielen mit und sprechen abwechselnd, wie Ping-Pong: Aufbau → Konter → Pointe. 2-3 Sprechzeilen pro Clip. Keine Monologe, niemand redet mit Gegenständen.
+- Der Witz kommt aus dem CHARAKTER und der Situation: die Figur reagiert genau so, wie es zu ihr passt (Stolz, Eitelkeit, Naivität, Strenge …) auf eine peinliche oder banale Aufgabe. Anspielungen auf ihre bekannte Art (z.B. Planeten, Prinz der Saiyajins, Essen) als Pointe sind gut.
+- Konkrete Alltags-Details machen es lustig ("drei Millimeter schief", "Punktabzug", "Aldi", "Nudeln kaufen").
+- Jeder Satz höchstens ca. 12 Wörter, Alltagsdeutsch, so wie Leute wirklich reden. Sofort verständlich: Ein 15-Jähriger auf TikTok muss in einer Sekunde lachen. Keine verkopften, zufälligen oder sinnlosen Absurditäten.
+- Die letzte Zeile ist die stärkste Pointe, am besten ein Konter oder ein Rückbezug.
+- GUTE BEISPIELE (genau dieser Humor ist gewünscht):
+${S.humor||""}
+- SCHLECHTES BEISPIEL (so NICHT): Freezer allein im Clip flüstert "Hallo, Dose. Wir kennen uns nicht." und schreit "Ich habe Planeten gesprengt, die teurer waren!" Fehler: Goku war im Bild und wurde ignoriert, Monolog, redet mit einer Dose, Witz nicht sofort verständlich, viel zu viele Aktionen.
+- PRÜFSCHRITT vor der Ausgabe: Sind alle sichtbaren Figuren drin? Reden sie MITEINANDER? Ist jede Zeile kurz und sofort lustig? Passt jede Pointe zum Charakter? Sind die Aktionen einfach genug? Wenn nicht: neu schreiben.
 
 AUSGABE: nur gültiges JSON, ohne Text davor oder danach, exakt im verlangten Schema.`}
 
@@ -286,8 +300,10 @@ async function api(prompt,{t=null,images=[],max=12000}={}){
 const taskCtx=t=>`AUFGABE: ${t.title}\nWer stellt die Wette: ${t.giver} → wer muss sie machen: ${t.doer}\nHandlung: ${t.summary}\nFiguren: ${t.cast.join(", ")}`;
 
 /* ---------- Video-Prompt zusammenbauen ---------- */
+function vlines(v){return v.beats?v.beats.filter(b=>b.speaker&&b.text).map(b=>({speaker:b.speaker,text:b.text,mode:b.mode})):(v.lines||[])}
 function vtext(v,t){
   if(v.override)return v.override;
+  if(v.beats)return vtextBeats(v,t);
   const st=styleOf(t),lang=LANGEN[S.lang]||"German",L=[];
   const ch=v.characters||[],ln=v.lines||[];
   L.push(st.vid);
@@ -312,6 +328,38 @@ function vtext(v,t){
   if(v.audio)L.push("","Audio: "+v.audio);
   const rules=castChars(t).filter(c=>c.rules&&ch.some(x=>up(x.name)===up(c.name))).map(c=>c.rules);
   L.push(`Keep all characters exactly as in the image, ${st.keep}.`+(rules.length?" "+rules.join(" "):""));
+  return L.filter((x,i,a)=>!(x===""&&(i===0||a[i-1]===""))).join("\n");
+}
+
+function vtextBeats(v,t){
+  const st=styleOf(t),lang=LANGEN[S.lang]||"German",L=[],ch=v.characters||[],bs=v.beats||[];
+  const names=ch.map(c=>up(c.name)),spk=bs.filter(b=>b.speaker&&b.text);
+  L.push(st.vid);
+  const singers=[...new Set(spk.filter(b=>b.mode==="sings").map(b=>up(b.speaker)))];
+  if(singers.length)L.push(`This is a music video, ${singers.join(" and ")} ${singers.length>1?"sing":"sings"} the whole time.`);
+  if(names.length)L.push(`Keep ${names.join(" and ")} exactly like in the reference image: same faces, bodies, outfits and colors, ${st.keep}.`);
+  if(v.premise)L.push("",v.premise);
+  if(v.scene)L.push(v.scene);
+  if(ch.length){L.push("");ch.forEach(c=>L.push(`${up(c.name)}: ${c.position?c.position+", ":""}${c.look}.`))}
+  if(v.stay)L.push(v.stay);
+  bs.forEach(b=>{
+    if(b.action)L.push("",b.action);
+    if(b.speaker&&b.text){const sp=up(b.speaker),sing=b.mode==="sings",c=ch.find(x=>up(x.name)===sp);
+      L.push("",`ONLY ${sp} ${sing?"SINGS":"SPEAKS"}:`);
+      L.push(`${sp}, ${[b.how,(c&&c.voice)||"",sing?"real singing voice, clear pitch, NOT speaking":(b.mode&&b.mode!=="says"?b.mode:"")].filter(Boolean).join(", ")}:`);
+      L.push(`„${b.text}“`);
+      L.push(`${sp} closes the mouth.`)}
+  });
+  L.push("");
+  if(spk.length>1)L.push(`STRICT SPEAKER ORDER: ${spk.map(b=>up(b.speaker)).join(" → ")}.`);
+  if(spk.length)L.push("Only the current speaker moves their mouth, everyone else keeps the mouth closed.");
+  if(names.length)L.push("Do not create additional characters. Do not change their clothes, faces or bodies.");
+  L.push("Natural hand and body movements.");
+  if(spk.length)L.push(`All dialogue in ${lang} with native ${lang} pronunciation and accurate ${lang} lip sync, no English accent.`);
+  if(v.audio)L.push("Audio: "+v.audio);
+  L.push("No subtitles, text overlays or logos.");
+  const rules=castChars(t).filter(c=>c.rules&&names.includes(up(c.name))).map(c=>c.rules);
+  if(rules.length)L.push(rules.join(" "));
   return L.filter((x,i,a)=>!(x===""&&(i===0||a[i-1]===""))).join("\n");
 }
 
@@ -345,11 +393,13 @@ async function genIdeas(n){
   const cs=S.chars.filter(c=>c.on);if(cs.length<1)return msg("Wähle mindestens eine Figur.",1);
   const req=$("#req").value.trim();
   await run(`Erstelle ${n} Ideen`,async()=>{
-    const r=await api(`AUFTRAG: Erfinde ${n} sehr witzige, unterschiedliche Aufgaben-Ideen für die Figuren ${cs.map(c=>c.name).join(", ")}.
+    const ask=(cnt,avoid)=>api(`AUFTRAG: Erfinde GENAU ${cnt} sehr witzige, unterschiedliche Aufgaben-Ideen für die Figuren ${cs.map(c=>c.name).join(", ")}. Nicht mehr und nicht weniger als ${cnt}.
 Wunsch / Thema / Fan-Kommentar des Nutzers: ${req?`"${req}"`:"keiner, überrasche mit den lustigsten Ideen"}
-Enthält der Text einen Fan-Kommentar mit mehreren Wünschen, mache aus jedem Wunsch genau eine Aufgabe (übernimm die Wünsche treu, aber witzig ausgearbeitet).
-AUSGABE JSON: {"ideas":[{"title":"","giver":"","doer":"","summary":"2-3 Sätze Handlung inklusive Pointe"}]}`,{max:4000});
-    IDEAS=(r.ideas||[]).map(d=>Object.assign(d,{cast:cs.map(c=>c.name),style:S.style}));saveI();renderIdeas();
+Enthält der Text einen Fan-Kommentar mit mehreren Wünschen, mache aus jedem Wunsch eine Aufgabe. Sind es weniger Wünsche als ${cnt}, erfinde passende weitere Ideen im gleichen Stil dazu, bis es genau ${cnt} sind.${avoid.length?`\nDiese Ideen gibt es schon, mache andere: ${avoid.join("; ")}`:""}
+AUSGABE JSON: {"ideas":[{"title":"","giver":"","doer":"","summary":"2-3 Sätze Handlung inklusive Pointe"}]}`,{max:Math.max(4000,cnt*450)});
+    let list=((await ask(n,[])).ideas||[]);
+    for(let tries=0;list.length<n&&tries<2;tries++){const more=(await ask(n-list.length,list.map(x=>x.title))).ideas||[];if(!more.length)break;list=list.concat(more)}
+    IDEAS=list.slice(0,n).map(d=>Object.assign(d,{cast:cs.map(c=>c.name),style:S.style}));saveI();renderIdeas();
   },`Hier sind ${n} Ideen, Boss.`)}
 $("#bIdeas").onclick=()=>genIdeas(+$("#nIdeas").value);
 $("#bOwn").onclick=()=>{const t=$("#oTitle").value.trim();if(!t)return msg("Bitte einen Titel eingeben.",1);
@@ -365,7 +415,7 @@ function renderTasks(){
 /* ---------- Aufgabe Detail ---------- */
 let OPEN={}; // offene Bearbeitungsboxen
 const IMGCHIPS=["Nahaufnahme","andere Perspektive","lustiger","mehr 3D, nicht 2D","Figuren genauer"];
-const VIDCHIPS=["kürzer","lustiger","ohne Musik & Lachen","deutlicher sprechen","echt singen","nur 1 Sprecher","mehr Bewegung"];
+const VIDCHIPS=["bessere Gags","kürzer","lustiger","ohne Musik & Lachen","deutlicher sprechen","echt singen","nur 1 Sprecher","mehr Bewegung"];
 function editBox(key,chips){return OPEN[key]?`<div class="edit"><div class="chips">${chips.map(c=>`<button type="button" class="chip" data-chip="${key}">${esc(c)}</button>`).join("")}</div>
   <textarea data-ins="${key}" placeholder="Was soll anders sein? z.B. Chichi soll links stehen, Dialog lustiger …" style="margin-top:8px"></textarea>
   <div class="row" style="margin-top:6px"><button class="btn sm" data-doedit="${key}" type="button">✨ Ändern</button><button class="btn sec sm" data-close="${key}" type="button">Schließen</button></div></div>`:""}
@@ -402,7 +452,7 @@ function renderDetail(){
   ${t.videos.length?`<button class="btn sec sm" id="bCopyVids" type="button" style="margin-top:8px">📋 Alle Video-Prompts kopieren</button>`:""}
   ${t.videos.map((v,i)=>{const th=v.image&&t.thumbs[v.image-1];return `<div class="card"><div class="row" style="align-items:flex-start;flex-wrap:nowrap">${th?`<img class="vimg" src="${th}" alt="">`:""}<div style="flex:1;min-width:0">
     <div class="tt">${esc(v.title||"Clip "+(i+1))}${v.override?'<span class="badge">selbst bearbeitet</span>':""}</div>
-    <div class="lines">${(v.lines||[]).map(l=>`<div class="ln"><span class="who ${l.mode==="sings"?"sing":""}">${esc(up(l.speaker))}${l.mode==="sings"?" 🎵":""}</span><span>${esc(l.text)}</span></div>`).join("")||'<span class="mut">ohne Dialog</span>'}</div></div></div>
+    <div class="lines">${vlines(v).map(l=>`<div class="ln"><span class="who ${l.mode==="sings"?"sing":""}">${esc(up(l.speaker))}${l.mode==="sings"?" 🎵":""}</span><span>${esc(l.text)}</span></div>`).join("")||'<span class="mut">ohne Dialog</span>'}</div></div></div>
     <details><summary class="mut">Ganzen Prompt anzeigen</summary><pre class="p">${esc(vtext(v,t))}</pre></details>
     <div class="tools" style="margin-top:6px"><button class="btn sm" data-copy="v${i}" type="button">📋 Kopieren</button><button class="btn sec sm" data-edit="v${i}" type="button">✏️ Ändern lassen</button><button class="btn sec sm" data-open-man="v${i}" type="button">📝 Selbst bearbeiten</button>${v.override?`<button class="btn sec sm" data-reset="${i}" type="button">↩️ Original</button>`:""}</div>
     ${editBox("v"+i,VIDCHIPS)}${manBox("v"+i,vtext(v,t))}</div>`}).join("")}
@@ -462,7 +512,7 @@ ${t.images.map((x,i)=>`Bild ${i+1}: ${x.prompt}`).join("\n\n")}`;
 
 ${base}
 Die Clips erzählen zusammen eine durchgehende, sehr witzige Geschichte. Kommt ein Lied vor, geht der Liedtext über die Clips weiter.
-AUSGABE JSON: {"videos":[{"image":1,"title":"Clip 1: …","scene":"","characters":[{"name":"","position":"","look":""}],"action":"","lines":[{"speaker":"","position":"","mode":"says","how":"","text":""}],"audio":""}],"notes":""}
+AUSGABE JSON: {"videos":[{"image":1,"title":"Clip 1: …","premise":"","scene":"","characters":[{"name":"","position":"","look":"","voice":""}],"stay":"","beats":[{"action":"","speaker":"","mode":"says","how":"","text":""}],"audio":""}],"notes":""}
 "image" ist die Nummer des Bildes (Bild 1, Bild 2 …), die Liste ist in Story-Reihenfolge.`,{t,images:imgs,max:14000});
     t.videos=r.videos||[];t.notes=r.notes||"";saveT();OPEN={};renderDetail();
   },`Die Video-Prompts sind fertig, Boss.`)}
@@ -485,7 +535,7 @@ async function doEdit(t,k,ins){
       t.images[i]={title:r.title||t.images[i].title,prompt:r.prompt||t.images[i].prompt};
     }else{const i=+k.slice(1),v=t.videos[i];
       const vcur=v.override?{title:v.title,fullPromptManuallyEdited:v.override}:v;
-      const r=await api(`${taskCtx(t)}\n\nAKTUELLER VIDEO-PROMPT (JSON):\n${JSON.stringify(vcur)}\n\nÄNDERUNGSWUNSCH: ${ins}\nSchreibe den Clip mit dieser Änderung neu. Alles andere bleibt gleich, Bild-Nummer bleibt gleich.\nAUSGABE JSON: {"video":{"image":${v.image||"null"},"title":"","scene":"","characters":[{"name":"","position":"","look":""}],"action":"","lines":[{"speaker":"","position":"","mode":"says","how":"","text":""}],"audio":""}}`,{t,max:4000});
+      const r=await api(`${taskCtx(t)}\n\nAKTUELLER VIDEO-PROMPT (JSON):\n${JSON.stringify(vcur)}\n\nÄNDERUNGSWUNSCH: ${ins}\nSchreibe den Clip mit dieser Änderung neu. Alles andere bleibt gleich, Bild-Nummer bleibt gleich.\nAUSGABE JSON: {"video":{"image":${v.image||"null"},"title":"Clip 1: …","premise":"","scene":"","characters":[{"name":"","position":"","look":"","voice":""}],"stay":"","beats":[{"action":"","speaker":"","mode":"says","how":"","text":""}],"audio":""}}`,{t,max:4000});
       if(r.video){t.videos[i]=Object.assign({image:v.image},r.video);delete t.videos[i].override}
     }
     OPEN[k]=false;saveT();renderDetail();
@@ -505,14 +555,14 @@ $("#fImgs").onchange=async e=>{const t=task(e.target.dataset.t||cur);const files
 function renderSpent(){const el=$("#spent");if(el)el.textContent=`Bisher verbraucht (Schätzung): ca. ${S.spent.toFixed(2).replace(".",",")} $`}
 function renderSet(){
   $("#key").value=S.key;$("#model").innerHTML=MODELS.map(m=>`<option value="${m[0]}" ${m[0]===S.model?"selected":""}>${m[1]}</option>`).join("");
-  $("#ai").value=S.ai;$("#lang").value=S.lang;$("#nImg").value=S.nImg;$("#rules").value=S.rules;renderSpent();
+  $("#ai").value=S.ai;$("#lang").value=S.lang;$("#nImg").value=S.nImg;$("#rules").value=S.rules;$("#humor").value=S.humor||"";renderSpent();
   $("#stEdit").innerHTML=Object.entries(S.styles).map(([k,v])=>`<option value="${k}">${esc(v.name)}</option>`).join("");$("#stEdit").value=S.style in S.styles?S.style:Object.keys(S.styles)[0];fillStyle();
   renderChars();renderVoice()}
 $("#bShowKey").onclick=()=>{const k=$("#key");k.type=k.type==="password"?"text":"password"};
 $("#bSaveKey").onclick=()=>{S.key=$("#key").value.trim();saveS();msg(S.key?"Schlüssel gespeichert (nur auf diesem Gerät).":"Schlüssel entfernt.",2)};
 $("#bTestKey").onclick=async()=>{S.key=$("#key").value.trim();saveS();await run("Teste Verbindung",async()=>{const r=await api('Antworte nur mit JSON: {"ok":true}',{max:50});if(!r.ok)throw new Error("Unerwartete Antwort")},"Verbindung steht, Boss.")};
 $("#model").onchange=e=>{S.model=e.target.value;saveS()};
-["ai","lang","rules"].forEach(id=>$("#"+id).onchange=e=>{S[id]=e.target.value;saveS()});
+["ai","lang","rules","humor"].forEach(id=>$("#"+id).onchange=e=>{S[id]=e.target.value;saveS()});
 $("#nImg").onchange=e=>{S.nImg=+e.target.value;saveS()};
 function fillStyle(){const s=S.styles[$("#stEdit").value];if(!s)return;$("#stName").value=s.name;$("#stImg").value=s.img;$("#stEnd").value=s.end;$("#stVid").value=s.vid;$("#stKeep").value=s.keep}
 $("#stEdit").onchange=fillStyle;
@@ -524,6 +574,7 @@ function renderChars(){
    <label>Name</label><input data-c="${i}" data-f="name" value="${esc(c.name)}">
    <label>Aussehen (Englisch, für Bild-Prompts)</label><textarea data-c="${i}" data-f="look">${esc(c.look)}</textarea>
    <label>Charakter / Sprechstil</label><textarea data-c="${i}" data-f="persona">${esc(c.persona)}</textarea>
+   <label>Stimme (Englisch, z.B. „adult male voice, deep and proud")</label><input data-c="${i}" data-f="voice" value="${esc(c.voice||"")}">
    <label>Feste Regel (z.B. „never holds a frying pan")</label><input data-c="${i}" data-f="rules" value="${esc(c.rules)}">
    <label>Passender Stil</label><select data-c="${i}" data-f="style">${Object.entries(S.styles).map(([k,v])=>`<option value="${k}" ${k===c.style?"selected":""}>${esc(v.name)}</option>`).join("")}</select>
    <button class="btn red sm" data-cdel="${i}" type="button" style="margin-top:8px">Figur löschen</button></details>`).join("");
@@ -531,7 +582,7 @@ function renderChars(){
     if(el.dataset.f==="name"&&old!==el.value)TASKS.forEach(t=>t.cast=t.cast.map(n=>n===old?el.value:n));saveS();saveT();renderCast()});
   $$("[data-cdel]").forEach(b=>b.onclick=()=>{if(!confirm("Figur löschen?"))return;S.chars.splice(+b.dataset.cdel,1);saveS();renderChars();renderCast()})}
 $("#bCharNew").onclick=()=>{S.chars.push({id:uid(),name:"Neue Figur",look:"",persona:"",rules:"",style:S.style,on:false});saveS();renderChars();renderCast();const d=$$("#charList details");d[d.length-1].open=true};
-$("#bExport").onclick=()=>{const data={v:2,tasks:TASKS,chars:S.chars,styles:S.styles,rules:S.rules};const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:"application/json"}));a.download="jaufmannempire-sicherung.json";a.click()};
+$("#bExport").onclick=()=>{const data={v:2,tasks:TASKS,chars:S.chars,styles:S.styles,rules:S.rules,humor:S.humor};const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:"application/json"}));a.download="jaufmannempire-sicherung.json";a.click()};
 $("#bImport").onclick=()=>$("#fImport").click();
 $("#fImport").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;try{const d=JSON.parse(await f.text());if(!confirm("Sicherung laden? Aktuelle Aufgaben, Figuren und Stile werden ersetzt."))return;
   TASKS=d.tasks||[];S.chars=d.chars||S.chars;S.styles=d.styles||S.styles;S.rules=d.rules||"";saveT();saveS();renderCast();renderStyleSel();renderSet();msg("Sicherung geladen.",2)}catch(err){msg("Diese Datei ist keine gültige Sicherung.",1)}};
